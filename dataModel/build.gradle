@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.org'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:20.1.0'
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    implementation 'org.jetbrains:annotations:20.1.0'
+
+
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.4.2.Final"
+
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.2'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+    implementation 'org.springframework.data:spring-data-mongodb:4.1.2'
+    implementation 'io.github.openfeign:feign-core:12.4'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'org.apache.commons:commons-lang3:3.9'
+    implementation 'org.springframework:spring-web:6.0.0'
+}
