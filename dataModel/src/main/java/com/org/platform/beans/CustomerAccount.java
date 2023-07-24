@@ -14,10 +14,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EmailOtpBean {
-
+public class CustomerAccount {
     @Id
     private String emailId;
-    private String hashedOtp;
-    private String token;
+    private String customerId;
+    private String phoneNumber;
+    private String firstName;
+    private String lastName;
+    private String address1;
+    private String address2;
+    private String city;
+    private String zipCode;
 }

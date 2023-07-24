@@ -29,31 +29,27 @@ public class OtpRepositoryImpl implements OtpRepository {
     }
 
     @Override
-    public String saveEmailOtpBean(String emailId, String hashedOtp) {
+    public void saveEmailOtpBean(String emailId, String hashedOtp) {
         MongoTemplate mongoTemplate = getMongoTemplateForOtp();
 
-//        Query query = new Query();
-//        Update update = new Update().set("name", description.getName()).set("norwegian", description.getNorwegian()).set("english", description.getEnglish());
-//        mongoTemplate.upsert(query, update, "descriptions");
+//        EmailOtpBean existingEmailOtpBean = mongoTemplate.findOne(Query.query(new Criteria().and("emailId").is(emailId)), EmailOtpBean.class);
+//        Query query = Query.query(new Criteria().and("emailId").is(emailId));
+//        Update update = new Update().set("hashedOtp", hashedOtp);
+//        UpdateResult updateResult = mongoTemplate.upsert(query, update, EmailOtpBean.class);
 
-        EmailOtpBean emailOtpBean = new EmailOtpBean(emailId, hashedOtp, null, null);
-        EmailOtpBean existingEmailOtpBean = mongoTemplate.findOne(Query.query(new Criteria().and("emailId").is(emailId)), EmailOtpBean.class);
-        if(nonNull(existingEmailOtpBean)) emailOtpBean.setRefId(existingEmailOtpBean.getRefId());
-        else emailOtpBean.setRefId(UUID.randomUUID().toString());
+        EmailOtpBean emailOtpBean = new EmailOtpBean(emailId, hashedOtp, null);
         mongoTemplate.save(emailOtpBean);
-        return emailOtpBean.getRefId();
     }
 
     @Override
-    public EmailOtpBean saveEmailOtpBean(EmailOtpBean emailOtpBean, EmailOtpBean existingEmailOtpBean) {
+    public EmailOtpBean saveEmailOtpBean(EmailOtpBean emailOtpBean) {
         MongoTemplate mongoTemplate = getMongoTemplateForOtp();
-        existingEmailOtpBean.setToken(emailOtpBean.getToken());
-        return mongoTemplate.save(existingEmailOtpBean);
+        return mongoTemplate.save(emailOtpBean);
     }
 
     @Override
-    public EmailOtpBean getEmailOtpBeanByRefId(String refId) {
+    public EmailOtpBean getEmailOtpBeanByEmailId(String emailId) {
         MongoTemplate mongoTemplate = getMongoTemplateForOtp();
-        return mongoTemplate.findOne(Query.query(new Criteria().and("refId").is(refId)), EmailOtpBean.class);
+        return mongoTemplate.findOne(Query.query(new Criteria().and("emailId").is(emailId)), EmailOtpBean.class);
     }
 }

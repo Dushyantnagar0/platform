@@ -2,7 +2,6 @@ package com.org.platform.configurations.filter;
 
 import com.org.platform.errors.exceptions.PlatformCoreException;
 import com.org.platform.services.interfaces.TokenService;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -12,14 +11,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.org.platform.errors.errorCodes.LoginError.INTERNAL_SERVER_ERROR;
 import static com.org.platform.errors.errorCodes.LoginError.INVALID_TOKEN;
+import static com.org.platform.services.HeaderContextService.createHeaderContextFromHttpHeaders;
+import static com.org.platform.utils.ServletFilterUtils.asHttp;
+import static com.org.platform.utils.ServletFilterUtils.forwardTheApiCall;
 
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PlatformConsumerApiFilter implements Filter {
+public class PlatformTokenApiFilter implements Filter {
 
     private final TokenService tokenService;
 
@@ -36,6 +37,7 @@ public class PlatformConsumerApiFilter implements Filter {
         log.info("http request tokenId : {}", tokenId);
         try {
             if (tokenService.validateJwtToken(tokenId, customerId)) {
+                createHeaderContextFromHttpHeaders(httpRequest);
                 forwardTheApiCall(request, response, chain);
             } else {
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -46,24 +48,4 @@ public class PlatformConsumerApiFilter implements Filter {
         }
     }
 
-    @Override
-    public void destroy() {
-
-    }
-
-    private void forwardTheApiCall(ServletRequest request, ServletResponse response, FilterChain chain) {
-        try {
-            chain.doFilter(request, response);
-        } catch (Exception e) {
-            throw new PlatformCoreException(INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private HttpServletRequest asHttp(ServletRequest request) {
-        return (HttpServletRequest) request;
-    }
-
-    private HttpServletResponse asHttp(ServletResponse response) {
-        return (HttpServletResponse) response;
-    }
 }

@@ -8,7 +8,8 @@ public enum LoginError implements PlatformError {
     INVALID_OTP_REQUEST("PE103", "invalid.otp.request"),
     INVALID_OTP_VALIDATION_REQUEST("PE104", "invalid.otp.validation.request"),
     FAILED_TO_VALIDATE_OTP("PE106", "otp.validation.failed"),
-    INVALID_TOKEN("PE107", "invalid.token");
+    INVALID_TOKEN("PE107", "invalid.token"),
+    NO_CUSTOMER_FOUND("PE108", "no.customer.found");
 
     private final String errorCode;
     private final String errorMessage;

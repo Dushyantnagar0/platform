@@ -1,6 +1,8 @@
 package com.org.platform.services.implementations;
 
+import com.org.platform.beans.CustomerAccount;
 import com.org.platform.beans.EmailOtpBean;
+import com.org.platform.repos.interfaces.CustomerAccountRepository;
 import com.org.platform.repos.interfaces.OtpRepository;
 import com.org.platform.requests.TokenGenerationRequest;
 import com.org.platform.services.interfaces.TokenService;
@@ -21,6 +23,7 @@ import java.util.UUID;
 import static com.org.platform.utils.Constants.PLATFORM_LOGIN;
 import static com.org.platform.utils.Constants.SECRET_KEY;
 import static com.org.platform.utils.ValidationUtils.tokenRequestValidation;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -29,6 +32,7 @@ import static java.util.Objects.nonNull;
 public class TokenServiceImpl implements TokenService {
 
     private final OtpRepository otpRepository;
+    private final CustomerAccountRepository customerAccountRepository;
 
     @Override
     public String generateJwtToken(TokenGenerationRequest tokenGenerationRequest) {
@@ -37,7 +41,6 @@ public class TokenServiceImpl implements TokenService {
         Instant now = Instant.now();
         String jwtToken = Jwts.builder()
                 .claim("emailId", tokenGenerationRequest.getEmailId())
-                .claim("otp", tokenGenerationRequest.getOtp())
                 .claim("refId", tokenGenerationRequest.getRefId())
                 .setSubject(PLATFORM_LOGIN)
                 .setId(UUID.randomUUID().toString())
@@ -50,7 +53,10 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public boolean validateJwtToken(String token, String refId) {
-          EmailOtpBean emailOtpBean = otpRepository.getEmailOtpBeanByRefId(refId);
+
+        CustomerAccount customerAccount = customerAccountRepository.getCustomerAccountByCustomerId(refId);
+        if(isNull(customerAccount)) return false;
+        EmailOtpBean emailOtpBean = otpRepository.getEmailOtpBeanByEmailId(customerAccount.getEmailId());
           /*
           Key hmacKey = new SecretKeySpec(Base64.getDecoder().decode(SECRET_KEY), SignatureAlgorithm.HS256.getJcaName());
           Jws<Claims> jwt = Jwts.parserBuilder()

@@ -1,11 +1,20 @@
 package com.org.platform.configurations.launcher;
 
+import com.org.platform.configurations.servlet.PlatformServlet;
+import com.org.platform.configurations.servlet.PlatformServletListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import javax.servlet.ServletContextListener;
 
 @ComponentScan(
         basePackages = {"com.org"},
@@ -20,5 +29,26 @@ public class PlatformLauncher extends SpringBootServletInitializer {
         SpringApplication.run(PlatformLauncher.class, args);
     }
 
+    @Bean
+    public ServletRegistrationBean customServletBean() {
+        ServletRegistrationBean bean = new ServletRegistrationBean(new PlatformServlet(), "/consumer", "/public");
+        return bean;
+    }
+
+    @Bean
+    public ServletListenerRegistrationBean<ServletContextListener> customListenerBean() {
+        ServletListenerRegistrationBean<ServletContextListener> bean = new ServletListenerRegistrationBean();
+        bean.setListener(new PlatformServletListener());
+        return bean;
+    }
+
+    @Bean
+    public AsyncTaskExecutor asyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(25);
+        return executor;
+}
 
 }

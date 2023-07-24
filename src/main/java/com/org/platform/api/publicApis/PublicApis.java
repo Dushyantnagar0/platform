@@ -2,6 +2,7 @@ package com.org.platform.api.publicApis;
 
 import com.org.platform.requests.LogInRequest;
 import com.org.platform.requests.OtpValidationRequest;
+import com.org.platform.services.HeaderContextService;
 import com.org.platform.services.interfaces.LogInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+import static com.org.platform.services.HeaderContextService.getContext;
 import static com.org.platform.utils.RestEntityBuilder.okResponseEntity;
 
 
@@ -23,7 +25,7 @@ public class PublicApis {
 
     @GetMapping("/test")
     public ResponseEntity<Map<String, Object>> testPublicApi(){
-        return okResponseEntity("success");
+        return okResponseEntity(getContext());
     }
 
     @PostMapping("/login")

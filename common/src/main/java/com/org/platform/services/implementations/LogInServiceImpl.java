@@ -1,13 +1,17 @@
 package com.org.platform.services.implementations;
 
+import com.org.platform.beans.CustomerAccount;
 import com.org.platform.beans.EmailOtpBean;
 import com.org.platform.errors.exceptions.PlatformCoreException;
+import com.org.platform.helpers.CustomerAccountHelper;
 import com.org.platform.repos.interfaces.OtpRepository;
+import com.org.platform.requests.CustomerAccountRequest;
 import com.org.platform.requests.LogInRequest;
 import com.org.platform.requests.OtpValidationRequest;
 import com.org.platform.requests.TokenGenerationRequest;
 import com.org.platform.responses.LogInResponse;
 import com.org.platform.responses.OtpValidationResponse;
+import com.org.platform.services.interfaces.CustomerAccountService;
 import com.org.platform.services.interfaces.LogInService;
 import com.org.platform.services.interfaces.OtpService;
 import com.org.platform.services.interfaces.TokenService;
@@ -26,14 +30,20 @@ public class LogInServiceImpl implements LogInService {
     private final OtpService otpService;
     private final OtpRepository otpRepository;
     private final TokenService tokenService;
+    private final CustomerAccountService customerAccountService;
+    private final CustomerAccountHelper customerAccountHelper;
 
 
     @Override
     public LogInResponse doLogin(LogInRequest logInRequest) {
         logInValidation(logInRequest);
         try {
-            String refId = otpService.sendAndSaveOtp(logInRequest.getEmailId());
-            return new LogInResponse(refId);
+            CustomerAccountRequest customerAccountRequest = customerAccountHelper.createCustomerAccountCreateRequest(logInRequest);
+            CustomerAccount customerAccount = customerAccountService.createOrUpdateCustomerAccount(customerAccountRequest);
+            // TODO : save hashed OTP with refId in cache
+            String otp = otpService.sendAndSaveOtp(logInRequest.getEmailId());
+            // TODO : for testing
+            return new LogInResponse(customerAccount.getCustomerId() + " " + otp);
         } catch (Exception e) {
             throw new PlatformCoreException(FAILED_TO_SEND_OTP);
         }
@@ -43,15 +53,12 @@ public class LogInServiceImpl implements LogInService {
     public OtpValidationResponse validateOtp(OtpValidationRequest otpValidationRequest) {
         otpValidationInValidation(otpValidationRequest);
         try {
-            EmailOtpBean emailOtpBean = otpService.validateOtp(otpValidationRequest);
-            if(isNull(emailOtpBean))
-                throw new PlatformCoreException(AUTHENTICATION_FAILED);
-            String token = tokenService.generateJwtToken(new TokenGenerationRequest(emailOtpBean.getEmailId(), emailOtpBean.getRefId(), otpValidationRequest.getOtp()));
+            String emailId = customerAccountService.getEmailIdFromRefId(otpValidationRequest.getRefId());
+            EmailOtpBean emailOtpBean = otpService.validateOtp(otpValidationRequest, emailId);
+            String token = tokenService.generateJwtToken(new TokenGenerationRequest(emailOtpBean.getEmailId(), otpValidationRequest.getRefId(), otpValidationRequest.getOtp()));
             emailOtpBean.setToken(token);
-            EmailOtpBean existingEmailOtpBean = otpRepository.getEmailOtpBeanByRefId(emailOtpBean.getRefId());
             // TODO : invalidate token
-
-            otpRepository.saveEmailOtpBean(emailOtpBean, existingEmailOtpBean);
+            otpRepository.saveEmailOtpBean(emailOtpBean);
             return new OtpValidationResponse(token);
         } catch (Exception e) {
             throw new PlatformCoreException(FAILED_TO_VALIDATE_OTP);

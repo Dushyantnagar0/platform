@@ -4,8 +4,8 @@ import com.org.platform.beans.EmailOtpBean;
 
 public interface OtpRepository {
 
-    String saveEmailOtpBean(String emailId, String hashedOtp);
-    EmailOtpBean saveEmailOtpBean(EmailOtpBean emailOtpBean, EmailOtpBean existingEmailOtpBean);
-    EmailOtpBean getEmailOtpBeanByRefId(String refId);
+    void saveEmailOtpBean(String emailId, String hashedOtp);
+    EmailOtpBean saveEmailOtpBean(EmailOtpBean emailOtpBean);
+    EmailOtpBean getEmailOtpBeanByEmailId(String refId);
 
 }

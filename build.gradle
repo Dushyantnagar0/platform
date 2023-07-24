@@ -43,6 +43,7 @@ ext {
 dependencies {
 	implementation project(":dataModel")
 	implementation project(":common")
+	implementation project(":headerContextSupport")
 
 	compileOnly 'org.projectlombok:lombok:1.18.22'
 	annotationProcessor 'org.projectlombok:lombok:1.18.22'
