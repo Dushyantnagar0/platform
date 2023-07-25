@@ -28,9 +28,9 @@ import static com.org.platform.services.HeaderContextService.createHeaderContext
 import static com.org.platform.utils.Constants.PLATFORM_LOGIN;
 import static com.org.platform.utils.Constants.SECRET_KEY;
 import static com.org.platform.utils.HeaderConstants.*;
+import static com.org.platform.utils.ValidationUtils.initialTokenValidation;
 import static com.org.platform.utils.ValidationUtils.tokenRequestValidation;
 import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Slf4j
 @Component
@@ -76,11 +76,6 @@ public class TokenServiceImpl implements TokenService {
         throw new PlatformCoreException(AUTHENTICATION_FAILED);
     }
 
-    private void initialTokenValidation(String tokenId, String customerId) {
-        if(isEmpty(tokenId) || isEmpty(customerId))
-            throw new PlatformCoreException(AUTHENTICATION_FAILED);
-    }
-
     private Map<String, Object> createHeaderMapFromToken(String tokenId) {
         Key hmacKey = new SecretKeySpec(Base64.getDecoder().decode(SECRET_KEY), SignatureAlgorithm.HS256.getJcaName());
         Jws<Claims> jwt = Jwts.parserBuilder().setSigningKey(hmacKey).build().parseClaimsJws(tokenId);
@@ -88,6 +83,7 @@ public class TokenServiceImpl implements TokenService {
         headerMap.put(VALIDATION_KEY, jwt.getBody().get(VALIDATION_KEY));
         headerMap.put(CUSTOMER_ID_KEY, jwt.getBody().get(REF_ID_KEY));
         headerMap.put(USER_TYPE_KEY, jwt.getBody().get(USER_TYPE_KEY));
+        headerMap.put(EMAIL_ID_KEY, jwt.getBody().get(EMAIL_ID_KEY));
         return headerMap;
     }
 }

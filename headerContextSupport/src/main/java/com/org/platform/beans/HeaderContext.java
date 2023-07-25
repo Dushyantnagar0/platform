@@ -11,6 +11,7 @@ import java.util.Map;
 @Data
 public class HeaderContext {
     private String userId;
+    private String emailId;
     private String userType;
     private String customerId;
     private String apiToken;

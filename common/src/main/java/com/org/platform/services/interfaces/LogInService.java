@@ -9,4 +9,6 @@ import com.org.platform.responses.OtpValidationResponse;
 public interface LogInService {
     LogInResponse doLogin(LogInRequest logInRequest);
     OtpValidationResponse validateOtp(OtpValidationRequest otpValidationRequest);
+    boolean doLogout();
+
 }

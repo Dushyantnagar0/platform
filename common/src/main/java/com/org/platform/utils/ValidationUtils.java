@@ -31,4 +31,9 @@ public class ValidationUtils {
             throw new PlatformCoreException(INTERNAL_SERVER_ERROR);
     }
 
+    public static void initialTokenValidation(String tokenId, String customerId) {
+        if(isEmpty(tokenId) || isEmpty(customerId))
+            throw new PlatformCoreException(AUTHENTICATION_FAILED);
+    }
+
 }

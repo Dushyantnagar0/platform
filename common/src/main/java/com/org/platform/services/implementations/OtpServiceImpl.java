@@ -3,8 +3,6 @@ package com.org.platform.services.implementations;
 import com.org.platform.beans.EmailOtpBean;
 import com.org.platform.errors.exceptions.PlatformCoreException;
 import com.org.platform.repos.interfaces.OtpRepository;
-import com.org.platform.requests.OtpValidationRequest;
-import com.org.platform.services.interfaces.CustomerAccountService;
 import com.org.platform.services.interfaces.OtpService;
 import com.org.platform.utils.HashUtils;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +38,13 @@ public class OtpServiceImpl implements OtpService {
         EmailOtpBean existingEmailOtpBean = otpRepository.getEmailOtpBeanByEmailId(emailId);
         if(hashedOtpRequest.equals(existingEmailOtpBean.getHashedOtp())) return existingEmailOtpBean;
         throw new PlatformCoreException(AUTHENTICATION_FAILED);
+    }
+
+    @Override
+    public EmailOtpBean inValidateToken(String emailId) {
+        EmailOtpBean existingEmailOtpBean = otpRepository.getEmailOtpBeanByEmailId(emailId);
+        existingEmailOtpBean.setToken(null);
+        return otpRepository.saveEmailOtpBean(existingEmailOtpBean);
     }
 
 }

@@ -14,13 +14,17 @@ import com.org.platform.responses.OtpValidationResponse;
 import com.org.platform.services.interfaces.*;
 import com.org.platform.utils.HashUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.org.platform.errors.errorCodes.LoginError.*;
+import static com.org.platform.errors.errorCodes.LoginError.FAILED_TO_SEND_OTP;
+import static com.org.platform.errors.errorCodes.LoginError.FAILED_TO_VALIDATE_OTP;
+import static com.org.platform.services.HeaderContextService.getCurrentUserEmailId;
 import static com.org.platform.utils.ValidationUtils.logInValidation;
 import static com.org.platform.utils.ValidationUtils.otpValidationInValidation;
-import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class LogInServiceImpl implements LogInService {
@@ -63,6 +67,13 @@ public class LogInServiceImpl implements LogInService {
         } catch (Exception e) {
             throw new PlatformCoreException(FAILED_TO_VALIDATE_OTP);
         }
+    }
+
+    @Override
+    public boolean doLogout() {
+        String emailId = getCurrentUserEmailId();
+        log.info("emailId in logout api : {}", emailId);
+        return nonNull(otpService.inValidateToken(emailId));
     }
 
 }

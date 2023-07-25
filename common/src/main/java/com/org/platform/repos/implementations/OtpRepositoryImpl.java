@@ -11,10 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
-
 import static com.org.platform.utils.Constants.PLATFORM_GLOBAL_DB;
-import static java.util.Objects.nonNull;
 
 @Slf4j
 @Repository
