@@ -27,7 +27,7 @@ public class ValidationUtils {
     }
 
     public static void tokenRequestValidation(TokenGenerationRequest tokenGenerationRequest) {
-        if(isNull(tokenGenerationRequest) || isEmpty(tokenGenerationRequest.getOtp()) || isEmpty(tokenGenerationRequest.getRefId()) || isEmpty(tokenGenerationRequest.getEmailId()))
+        if(isNull(tokenGenerationRequest) || isEmpty(tokenGenerationRequest.getHashedOtp()) || isEmpty(tokenGenerationRequest.getRefId()) || isEmpty(tokenGenerationRequest.getEmailId()))
             throw new PlatformCoreException(INTERNAL_SERVER_ERROR);
     }
 

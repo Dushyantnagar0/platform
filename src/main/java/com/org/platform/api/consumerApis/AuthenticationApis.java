@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+import static com.org.platform.services.HeaderContextService.getContext;
 import static com.org.platform.utils.RestEntityBuilder.okResponseEntity;
 
 @RestController
@@ -17,7 +18,7 @@ public class AuthenticationApis {
 
     @GetMapping("/test")
     public ResponseEntity<Map<String, Object>> testConsumerApi(){
-        return okResponseEntity("success");
+        return okResponseEntity(getContext());
     }
 
 }

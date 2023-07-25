@@ -21,7 +21,6 @@ public class CustomerAccountHelper {
         }
         if(isBlank(customerAccount.getCustomerId())) customerAccount.setCustomerId(UUID.randomUUID().toString());
         if(isBlank(customerAccount.getEmailId())) customerAccount.setEmailId(customerAccountRequest.getEmailId());
-        customerAccount.setEmailId(customerAccountRequest.getEmailId());
         customerAccount.setPhoneNumber(customerAccount.getPhoneNumber());
         customerAccount.setFirstName(customerAccountRequest.getFirstName());
         customerAccount.setLastName(customerAccountRequest.getLastName());

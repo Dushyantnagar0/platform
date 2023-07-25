@@ -7,12 +7,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.org.platform.services.HeaderContextService.createHeaderContextFromHttpHeaders;
+import static com.org.platform.services.HeaderContextService.createHeaderContextFromHttpHeadersForPublicApi;
 import static com.org.platform.utils.ServletFilterUtils.asHttp;
 import static com.org.platform.utils.ServletFilterUtils.forwardTheApiCall;
 
 @Slf4j
-public class PlatformUserApiFilter implements Filter {
+public class PlatformPublicApiFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {}
@@ -24,7 +24,7 @@ public class PlatformUserApiFilter implements Filter {
         String userId = httpRequest.getHeader("userId");
         log.info("http response userId : {}", userId);
 
-        createHeaderContextFromHttpHeaders(httpRequest);
+        createHeaderContextFromHttpHeadersForPublicApi(httpRequest);
         forwardTheApiCall(request, response, chain);
     }
 

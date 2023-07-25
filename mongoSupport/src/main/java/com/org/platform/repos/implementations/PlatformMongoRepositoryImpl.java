@@ -18,10 +18,10 @@ import org.springframework.stereotype.Repository;
 public class PlatformMongoRepositoryImpl implements PlatformMongoRepository {
 
     private final MongoClient mongoClient;
-    public static final String PLATFORM_GLOBAL_DB = System.getenv("mongo_port");
+    public static final String PLATFORM_GLOBAL_DB_CONNECTION = System.getenv("mongo_port");
 
     PlatformMongoRepositoryImpl() {
-        ConnectionString connectionString = new ConnectionString(PLATFORM_GLOBAL_DB);
+        ConnectionString connectionString = new ConnectionString(PLATFORM_GLOBAL_DB_CONNECTION);
         MongoClientSettings settings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .build();

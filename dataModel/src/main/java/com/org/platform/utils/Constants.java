@@ -6,7 +6,7 @@ import lombok.experimental.UtilityClass;
 public class Constants {
 
     public static final String SECRET_KEY = System.getenv("secretKey");
-    public static final String PLATFORM_GLOBAL_DB = System.getenv("mongo_port");
+    public static final String PLATFORM_GLOBAL_DB = System.getenv("dbName");
     public static final String APP_ROOT = "/platform";
     public static final String APPLICATION_JSON_TYPE = "application/json";
     public static final String SERVICE_NAME = System.getenv("service_name");

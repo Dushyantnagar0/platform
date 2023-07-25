@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
+import static com.org.platform.utils.Constants.PLATFORM_GLOBAL_DB;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -25,18 +26,12 @@ public class OtpRepositoryImpl implements OtpRepository {
 
 
     public MongoTemplate getMongoTemplateForOtp() {
-        return platformMongoService.getMongoTemplate(System.getenv("dbName"));
+        return platformMongoService.getMongoTemplate(PLATFORM_GLOBAL_DB);
     }
 
     @Override
     public void saveEmailOtpBean(String emailId, String hashedOtp) {
         MongoTemplate mongoTemplate = getMongoTemplateForOtp();
-
-//        EmailOtpBean existingEmailOtpBean = mongoTemplate.findOne(Query.query(new Criteria().and("emailId").is(emailId)), EmailOtpBean.class);
-//        Query query = Query.query(new Criteria().and("emailId").is(emailId));
-//        Update update = new Update().set("hashedOtp", hashedOtp);
-//        UpdateResult updateResult = mongoTemplate.upsert(query, update, EmailOtpBean.class);
-
         EmailOtpBean emailOtpBean = new EmailOtpBean(emailId, hashedOtp, null);
         mongoTemplate.save(emailOtpBean);
     }

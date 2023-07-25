@@ -12,20 +12,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static com.org.platform.errors.errorCodes.LoginError.INVALID_TOKEN;
-import static com.org.platform.services.HeaderContextService.createHeaderContextFromHttpHeaders;
 import static com.org.platform.utils.ServletFilterUtils.asHttp;
 import static com.org.platform.utils.ServletFilterUtils.forwardTheApiCall;
-
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PlatformTokenApiFilter implements Filter {
+public class PlatformAdminFilter implements Filter {
 
     private final TokenService tokenService;
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {}
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -36,8 +31,7 @@ public class PlatformTokenApiFilter implements Filter {
 
         log.info("http request tokenId : {}", tokenId);
         try {
-            if (tokenService.validateJwtToken(tokenId, customerId)) {
-                createHeaderContextFromHttpHeaders(httpRequest);
+            if (tokenService.validateJwtTokenAndCreateHeaderMap(httpRequest, tokenId, customerId, true)) {
                 forwardTheApiCall(request, response, chain);
             } else {
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);

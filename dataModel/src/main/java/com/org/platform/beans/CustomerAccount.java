@@ -19,6 +19,7 @@ public class CustomerAccount {
     private String emailId;
     private String customerId;
     private String phoneNumber;
+    private String userAccessType;
     private String firstName;
     private String lastName;
     private String address1;

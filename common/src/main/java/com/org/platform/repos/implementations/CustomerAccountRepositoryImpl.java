@@ -1,7 +1,6 @@
 package com.org.platform.repos.implementations;
 
 import com.org.platform.beans.CustomerAccount;
-import com.org.platform.beans.EmailOtpBean;
 import com.org.platform.repos.interfaces.CustomerAccountRepository;
 import com.org.platform.services.interfaces.PlatformMongoService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +10,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+
+import static com.org.platform.utils.Constants.PLATFORM_GLOBAL_DB;
 
 @Slf4j
 @Repository
@@ -22,7 +23,7 @@ public class CustomerAccountRepositoryImpl implements CustomerAccountRepository 
 
 
     public MongoTemplate getMongoTemplateForCustomerAccount() {
-        return platformMongoService.getMongoTemplate(System.getenv("dbName"));
+        return platformMongoService.getMongoTemplate(PLATFORM_GLOBAL_DB);
     }
 
     @Override

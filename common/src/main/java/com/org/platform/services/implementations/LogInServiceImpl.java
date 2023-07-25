@@ -11,10 +11,8 @@ import com.org.platform.requests.OtpValidationRequest;
 import com.org.platform.requests.TokenGenerationRequest;
 import com.org.platform.responses.LogInResponse;
 import com.org.platform.responses.OtpValidationResponse;
-import com.org.platform.services.interfaces.CustomerAccountService;
-import com.org.platform.services.interfaces.LogInService;
-import com.org.platform.services.interfaces.OtpService;
-import com.org.platform.services.interfaces.TokenService;
+import com.org.platform.services.interfaces.*;
+import com.org.platform.utils.HashUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +30,7 @@ public class LogInServiceImpl implements LogInService {
     private final TokenService tokenService;
     private final CustomerAccountService customerAccountService;
     private final CustomerAccountHelper customerAccountHelper;
+    private final AdminMetaDataService adminMetaDataService;
 
 
     @Override
@@ -54,10 +53,11 @@ public class LogInServiceImpl implements LogInService {
         otpValidationInValidation(otpValidationRequest);
         try {
             String emailId = customerAccountService.getEmailIdFromRefId(otpValidationRequest.getRefId());
-            EmailOtpBean emailOtpBean = otpService.validateOtp(otpValidationRequest, emailId);
-            String token = tokenService.generateJwtToken(new TokenGenerationRequest(emailOtpBean.getEmailId(), otpValidationRequest.getRefId(), otpValidationRequest.getOtp()));
+            String hashedOtp = HashUtils.hash(otpValidationRequest.getOtp());
+            EmailOtpBean emailOtpBean = otpService.validateOtp(hashedOtp, emailId);
+            String accessType = adminMetaDataService.fetchAccessLevelForAnEmailId(emailId);
+            String token = tokenService.generateJwtToken(new TokenGenerationRequest(emailOtpBean.getEmailId(), otpValidationRequest.getRefId(), hashedOtp ,true), accessType);
             emailOtpBean.setToken(token);
-            // TODO : invalidate token
             otpRepository.saveEmailOtpBean(emailOtpBean);
             return new OtpValidationResponse(token);
         } catch (Exception e) {

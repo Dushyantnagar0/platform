@@ -24,6 +24,7 @@ public class OtpServiceImpl implements OtpService {
     public String sendAndSaveOtp(String emailId) {
         String otp = generateOtpValue(6);
         String hashedOtp = HashUtils.hash(otp);
+//        TODO : send OTP email
 //        emailService.sendEmail(emailId, otp);
         otpRepository.saveEmailOtpBean(emailId, hashedOtp);
         return otp;
@@ -35,10 +36,9 @@ public class OtpServiceImpl implements OtpService {
     }
 
     @Override
-    public EmailOtpBean validateOtp(OtpValidationRequest otpValidationRequest, String emailId) {
-        String hashedOtpRequest = HashUtils.hash(otpValidationRequest.getOtp());
+    public EmailOtpBean validateOtp(String hashedOtpRequest, String emailId) {
         EmailOtpBean existingEmailOtpBean = otpRepository.getEmailOtpBeanByEmailId(emailId);
-        if(hashedOtpRequest.equalsIgnoreCase(existingEmailOtpBean.getHashedOtp())) return existingEmailOtpBean;
+        if(hashedOtpRequest.equals(existingEmailOtpBean.getHashedOtp())) return existingEmailOtpBean;
         throw new PlatformCoreException(AUTHENTICATION_FAILED);
     }
 

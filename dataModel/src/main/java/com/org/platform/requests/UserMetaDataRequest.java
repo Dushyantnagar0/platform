@@ -1,6 +1,7 @@
 package com.org.platform.requests;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.org.platform.enums.UserAccessType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TokenGenerationRequest {
+public class UserMetaDataRequest {
     private String emailId;
-    private String refId;
-    private String hashedOtp;
-    private boolean valid;
+    private UserAccessType userAccessType;
 }
