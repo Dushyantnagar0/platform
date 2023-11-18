@@ -9,8 +9,8 @@ import com.org.platform.services.interfaces.CustomerAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.org.platform.errors.errorCodes.LoginError.INTERNAL_SERVER_ERROR;
-import static com.org.platform.errors.errorCodes.LoginError.NO_CUSTOMER_FOUND;
+import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INTERNAL_SERVER_ERROR;
+import static com.org.platform.errors.errorCodes.PlatformErrorCodes.NO_CUSTOMER_FOUND;
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 

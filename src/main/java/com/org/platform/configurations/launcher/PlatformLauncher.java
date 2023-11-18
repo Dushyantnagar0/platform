@@ -12,10 +12,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.servlet.ServletContextListener;
 
+@EnableRetry
 @ComponentScan(
         basePackages = {"com.org"},
         excludeFilters = {
@@ -26,12 +28,14 @@ import javax.servlet.ServletContextListener;
 public class PlatformLauncher extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
-        SpringApplication.run(PlatformLauncher.class, args);
+        SpringApplication app = new SpringApplication(PlatformLauncher.class);
+        app.setLazyInitialization(true);
+        app.run(args);
     }
 
     @Bean
     public ServletRegistrationBean customServletBean() {
-        ServletRegistrationBean bean = new ServletRegistrationBean(new PlatformServlet(), "/consumer", "/public");
+        ServletRegistrationBean bean = new ServletRegistrationBean(new PlatformServlet(), "/customer", "/public");
         return bean;
     }
 

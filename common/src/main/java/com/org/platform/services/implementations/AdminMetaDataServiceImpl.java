@@ -5,10 +5,12 @@ import com.org.platform.repos.interfaces.AdminMetaDataRepository;
 import com.org.platform.requests.UserMetaDataRequest;
 import com.org.platform.services.interfaces.AdminMetaDataService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.nonNull;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AdminMetaDataServiceImpl implements AdminMetaDataService {

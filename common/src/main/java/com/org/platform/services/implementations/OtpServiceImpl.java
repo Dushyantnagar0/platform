@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.org.platform.errors.errorCodes.LoginError.AUTHENTICATION_FAILED;
+import static com.org.platform.errors.errorCodes.PlatformErrorCodes.AUTHENTICATION_FAILED;
 import static java.util.concurrent.ThreadLocalRandom.current;
 
 @Slf4j

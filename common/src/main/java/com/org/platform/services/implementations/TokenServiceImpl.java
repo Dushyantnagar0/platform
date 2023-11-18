@@ -2,7 +2,6 @@ package com.org.platform.services.implementations;
 
 import com.org.platform.beans.CustomerAccount;
 import com.org.platform.beans.EmailOtpBean;
-import com.org.platform.enums.UserAccessType;
 import com.org.platform.errors.exceptions.PlatformCoreException;
 import com.org.platform.repos.interfaces.CustomerAccountRepository;
 import com.org.platform.repos.interfaces.OtpRepository;
@@ -23,7 +22,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static com.org.platform.errors.errorCodes.LoginError.AUTHENTICATION_FAILED;
+import static com.org.platform.enums.UserAccessType.ADMIN;
+import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INVALID_TOKEN;
 import static com.org.platform.services.HeaderContextService.createHeaderContextFromHttpHeaders;
 import static com.org.platform.utils.Constants.PLATFORM_LOGIN;
 import static com.org.platform.utils.Constants.SECRET_KEY;
@@ -42,9 +42,9 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String generateJwtToken(TokenGenerationRequest tokenGenerationRequest, String accessType) {
-        Key hmacKey = new SecretKeySpec(Base64.getDecoder().decode(SECRET_KEY), SignatureAlgorithm.HS256.getJcaName());
         tokenRequestValidation(tokenGenerationRequest);
         Instant now = Instant.now();
+        Key hmacKey = new SecretKeySpec(Base64.getDecoder().decode(SECRET_KEY), SignatureAlgorithm.HS256.getJcaName());
         return Jwts.builder()
                 .claim(EMAIL_ID_KEY, tokenGenerationRequest.getEmailId())
                 .claim(REF_ID_KEY, tokenGenerationRequest.getRefId())
@@ -60,20 +60,16 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public boolean validateJwtTokenAndCreateHeaderMap(HttpServletRequest httpRequest, String tokenId, String customerId, boolean isForAdmin) {
+    public boolean validateJwtTokenAndCreateHeaderMap(HttpServletRequest httpRequest, String tokenId, String customerId, boolean isForAdminApi) {
         initialTokenValidation(tokenId, customerId);
         CustomerAccount customerAccount = customerAccountRepository.getCustomerAccountByCustomerId(customerId);
         if(nonNull(customerAccount)) {
             Map<String, Object> headerMap = createHeaderMapFromToken(tokenId);
             EmailOtpBean emailOtpBean = otpRepository.getEmailOtpBeanByEmailId(customerAccount.getEmailId());
-            boolean validation = nonNull(emailOtpBean) && tokenId.equals(emailOtpBean.getToken());
-            if (isForAdmin) validation = validation && UserAccessType.ADMIN.name().equals(headerMap.get(USER_TYPE_KEY));
-            if (validation) {
-                createHeaderContextFromHttpHeaders(httpRequest, headerMap);
-                return true;
-            }
+            createHeaderContextFromHttpHeaders(httpRequest, headerMap);
+            return nonNull(emailOtpBean) && tokenId.equals(emailOtpBean.getToken()) && (!isForAdminApi || ADMIN.name().equals(headerMap.get(USER_TYPE_KEY)));
         }
-        throw new PlatformCoreException(AUTHENTICATION_FAILED);
+        throw new PlatformCoreException(INVALID_TOKEN);
     }
 
     private Map<String, Object> createHeaderMapFromToken(String tokenId) {

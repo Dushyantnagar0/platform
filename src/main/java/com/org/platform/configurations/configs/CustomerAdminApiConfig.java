@@ -15,7 +15,7 @@ public class CustomerAdminApiConfig {
         PlatformCustomerAdminApiFilter platformCustomerAdminApiFilter = new PlatformCustomerAdminApiFilter(tokenService);
 
         registrationBean.setFilter(platformCustomerAdminApiFilter);
-        registrationBean.addUrlPatterns("/consumer/*", "/admin/*");
+        registrationBean.addUrlPatterns("/customer/*", "/admin/*");
         registrationBean.setOrder(1);
         return registrationBean;
     }

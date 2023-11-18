@@ -27,4 +27,6 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'org.apache.commons:commons-lang3:3.9'
     implementation 'org.springframework:spring-web:6.0.0'
+    implementation 'org.aspectj:aspectjweaverb:1.8.13'
+    implementation 'org.springframework:spring-context:5.0.2.RELEASE'
 }

@@ -1,4 +1,4 @@
-package com.org.platform.api.consumerApis;
+package com.org.platform.api.customerApis;
 
 import com.org.platform.services.interfaces.LogInService;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +14,14 @@ import static com.org.platform.services.HeaderContextService.getContext;
 import static com.org.platform.utils.RestEntityBuilder.okResponseEntity;
 
 @RestController
-@RequestMapping("/consumer")
+@RequestMapping("/customer")
 @RequiredArgsConstructor
-public class AuthenticationApis {
+public class CustomerApis {
 
     private final LogInService logInService;
 
-    @GetMapping("/test")
-    public ResponseEntity<Map<String, Object>> testConsumerApi(){
+    @GetMapping("/context")
+    public ResponseEntity<Map<String, Object>> getCustomerApiContext(){
         return okResponseEntity(getContext());
     }
 

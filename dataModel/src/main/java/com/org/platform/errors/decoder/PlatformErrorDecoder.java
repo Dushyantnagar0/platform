@@ -1,7 +1,7 @@
 package com.org.platform.errors.decoder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.org.platform.errors.errorCodes.LoginError;
+import com.org.platform.errors.errorCodes.PlatformErrorCodes;
 import com.org.platform.errors.errorResponses.ErrorResponse;
 import com.org.platform.errors.exceptions.PlatformCoreException;
 import com.org.platform.utils.ErrorUtils;
@@ -30,9 +30,9 @@ public class PlatformErrorDecoder implements ErrorDecoder {
             throw new RuntimeException(JSON_PARSING_ERROR);
         }
         if(nonNull(errorDetails)) {
-            LoginError loginError = ErrorUtils.fromErrorCodeOrNull(LoginError.class, errorDetails.getErrorCode());
-            if(nonNull(loginError)) {
-                throw new PlatformCoreException(loginError);
+            PlatformErrorCodes platformErrorCode = ErrorUtils.fromErrorCodeOrNull(PlatformErrorCodes.class, errorDetails.getErrorCode());
+            if(nonNull(platformErrorCode)) {
+                throw new PlatformCoreException(platformErrorCode);
             }
         }
         throw new RuntimeException(INTERNAL_SERVER_ERROR);

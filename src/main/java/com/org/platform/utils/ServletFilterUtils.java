@@ -10,7 +10,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.org.platform.errors.errorCodes.LoginError.INTERNAL_SERVER_ERROR;
+import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 @UtilityClass

@@ -4,8 +4,10 @@ import com.org.platform.requests.LogInRequest;
 import com.org.platform.requests.OtpValidationRequest;
 import com.org.platform.services.HeaderContextService;
 import com.org.platform.services.interfaces.LogInService;
+import com.org.platform.services.interfaces.RetryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +23,20 @@ import static com.org.platform.utils.RestEntityBuilder.okResponseEntity;
 @Slf4j
 public class PublicApis {
 
-    private final LogInService logInService;
 
-    @GetMapping("/test")
-    public ResponseEntity<Map<String, Object>> testPublicApi(){
+    @Value("${service_name}")
+    public String service_name;
+
+    private final LogInService logInService;
+    private final RetryService retryService;
+
+    @GetMapping("/service-name")
+    public ResponseEntity<Map<String, Object>> getServiceName(){
+        return okResponseEntity(service_name);
+    }
+
+    @GetMapping("/context")
+    public ResponseEntity<Map<String, Object>> getPublicApiContext(){
         return okResponseEntity(getContext());
     }
 
@@ -36,6 +48,12 @@ public class PublicApis {
     @PostMapping("/validate/otp")
     public ResponseEntity<Map<String, Object>> validateOtp(@RequestBody OtpValidationRequest otpValidationRequest) {
         return okResponseEntity(logInService.validateOtp(otpValidationRequest));
+    }
+
+    @GetMapping("/retry")
+    public ResponseEntity<Map<String, Object>> retryApi(){
+        retryService.retry();
+        return okResponseEntity("Ok");
     }
 
 }

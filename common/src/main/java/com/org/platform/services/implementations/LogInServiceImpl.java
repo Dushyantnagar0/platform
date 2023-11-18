@@ -17,8 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.org.platform.errors.errorCodes.LoginError.FAILED_TO_SEND_OTP;
-import static com.org.platform.errors.errorCodes.LoginError.FAILED_TO_VALIDATE_OTP;
+import static com.org.platform.errors.errorCodes.PlatformErrorCodes.FAILED_TO_SEND_OTP;
+import static com.org.platform.errors.errorCodes.PlatformErrorCodes.FAILED_TO_VALIDATE_OTP;
 import static com.org.platform.services.HeaderContextService.getCurrentUserEmailId;
 import static com.org.platform.utils.ValidationUtils.logInValidation;
 import static com.org.platform.utils.ValidationUtils.otpValidationInValidation;
