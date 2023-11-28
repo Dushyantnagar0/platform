@@ -3,9 +3,11 @@ package com.org.platform.configurations.configs;
 import com.org.platform.configurations.filter.PlatformPublicApiFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ComponentScan(basePackages = {"com.org.platform.publicApis"})
 public class PublicApiConfig {
 
     @Bean

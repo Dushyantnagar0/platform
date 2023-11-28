@@ -61,5 +61,9 @@ public class HeaderContextService {
         return headerContext.getEmailId();
     }
 
+    public static String getCurrentUserClientId() {
+        HeaderContext headerContext = getContext();
+        return headerContext.getClientId();
+    }
 
 }

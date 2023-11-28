@@ -43,7 +43,7 @@ public class RestEntityBuilder {
         return ResponseEntity.status(httpStatus).contentType(MediaType.APPLICATION_JSON_UTF8).headers(headers).body(response);
     }
 
-    public static ResponseEntity<Map<String, Object>> createErrorResponseEntity(Throwable exception, HttpStatus httpStatus) {
+    public static ResponseEntity<Map<String, Object>> createErrorResponseEntity(Throwable exception) {
         Map<String, Object> response = new HashMap<>();
         response.put(STATUS, FAILED);
         if(exception instanceof PlatformCoreException) {

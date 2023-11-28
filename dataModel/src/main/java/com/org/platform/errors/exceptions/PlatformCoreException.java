@@ -5,7 +5,7 @@ import com.org.platform.errors.errorCodes.PlatformError;
 
 import static com.org.platform.utils.Constants.SOMETHING_WRONG_HAPPENED;
 
-public class PlatformCoreException extends RuntimeException implements PlatformException{
+public class PlatformCoreException extends RuntimeException implements PlatformException {
 
     private String errorCode;
     private String errorMessage;

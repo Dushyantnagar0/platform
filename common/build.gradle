@@ -33,8 +33,10 @@ ext {
 
 dependencies {
     implementation project(":dataModel")
+    implementation project(":redisSupport")
     implementation project(':mongoSupport')
     implementation project(":headerContextSupport")
+
 
     implementation 'org.springframework.data:spring-data-mongodb:3.3.5'
     implementation 'org.jetbrains:annotations:20.1.0'

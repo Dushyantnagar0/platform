@@ -7,23 +7,28 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import javax.servlet.ServletContextListener;
 
 @EnableRetry
+@EnableCaching
 @ComponentScan(
         basePackages = {"com.org"},
         excludeFilters = {
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = "com\\.org\\..*launcher\\..*")
         })
 @Configuration
+@EnableScheduling
 @SpringBootApplication
 public class PlatformLauncher extends SpringBootServletInitializer {
 
@@ -53,6 +58,6 @@ public class PlatformLauncher extends SpringBootServletInitializer {
         executor.setMaxPoolSize(10);
         executor.setQueueCapacity(25);
         return executor;
-}
+    }
 
 }

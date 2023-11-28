@@ -1,6 +1,9 @@
 package com.org.platform.utils;
 
 import lombok.experimental.UtilityClass;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.time.Duration;
 
 @UtilityClass
 public class Constants {
@@ -14,5 +17,7 @@ public class Constants {
     public static final String SOMETHING_WRONG_HAPPENED  = "Something Wrong Happened";
     public static final String JSON_PARSING_ERROR = "Json Parsing Error";
     public static final String PLATFORM_LOGIN = "PLATFORM_LOGIN";
+//    @Value("ip.rate.limit.threshold.limit")
+    public static final long IP_RATE_LIMIT_THRESHOLD_LIMIT = 5;
 
 }

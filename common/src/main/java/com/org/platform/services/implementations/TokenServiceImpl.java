@@ -2,15 +2,12 @@ package com.org.platform.services.implementations;
 
 import com.org.platform.beans.CustomerAccount;
 import com.org.platform.beans.EmailOtpBean;
-import com.org.platform.errors.exceptions.PlatformCoreException;
 import com.org.platform.repos.interfaces.CustomerAccountRepository;
 import com.org.platform.repos.interfaces.OtpRepository;
 import com.org.platform.requests.TokenGenerationRequest;
 import com.org.platform.services.interfaces.TokenService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,7 +20,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static com.org.platform.enums.UserAccessType.ADMIN;
-import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INVALID_TOKEN;
 import static com.org.platform.services.HeaderContextService.createHeaderContextFromHttpHeaders;
 import static com.org.platform.utils.Constants.PLATFORM_LOGIN;
 import static com.org.platform.utils.Constants.SECRET_KEY;
@@ -62,24 +58,33 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public boolean validateJwtTokenAndCreateHeaderMap(HttpServletRequest httpRequest, String tokenId, String customerId, boolean isForAdminApi) {
         initialTokenValidation(tokenId, customerId);
-        CustomerAccount customerAccount = customerAccountRepository.getCustomerAccountByCustomerId(customerId);
-        if(nonNull(customerAccount)) {
-            Map<String, Object> headerMap = createHeaderMapFromToken(tokenId);
-            EmailOtpBean emailOtpBean = otpRepository.getEmailOtpBeanByEmailId(customerAccount.getEmailId());
-            createHeaderContextFromHttpHeaders(httpRequest, headerMap);
-            return nonNull(emailOtpBean) && tokenId.equals(emailOtpBean.getToken()) && (!isForAdminApi || ADMIN.name().equals(headerMap.get(USER_TYPE_KEY)));
+        try {
+            CustomerAccount customerAccount = customerAccountRepository.getCustomerAccountByCustomerId(customerId);
+            if (nonNull(customerAccount)) {
+                Map<String, Object> headerMap = createHeaderMapFromToken(tokenId);
+                EmailOtpBean emailOtpBean = otpRepository.getEmailOtpBeanByEmailId(customerAccount.getEmailId());
+                createHeaderContextFromHttpHeaders(httpRequest, headerMap);
+                return nonNull(emailOtpBean) && tokenId.equals(emailOtpBean.getToken()) && (!isForAdminApi || ADMIN.name().equals(headerMap.get(USER_TYPE_KEY)));
+            }
+        } catch (Exception e) {
+            return false;
         }
-        throw new PlatformCoreException(INVALID_TOKEN);
+        return false;
     }
 
     private Map<String, Object> createHeaderMapFromToken(String tokenId) {
-        Key hmacKey = new SecretKeySpec(Base64.getDecoder().decode(SECRET_KEY), SignatureAlgorithm.HS256.getJcaName());
-        Jws<Claims> jwt = Jwts.parserBuilder().setSigningKey(hmacKey).build().parseClaimsJws(tokenId);
-        Map<String, Object> headerMap = new HashMap<>();
-        headerMap.put(VALIDATION_KEY, jwt.getBody().get(VALIDATION_KEY));
-        headerMap.put(CUSTOMER_ID_KEY, jwt.getBody().get(REF_ID_KEY));
-        headerMap.put(USER_TYPE_KEY, jwt.getBody().get(USER_TYPE_KEY));
-        headerMap.put(EMAIL_ID_KEY, jwt.getBody().get(EMAIL_ID_KEY));
-        return headerMap;
+        try {
+            Key hmacKey = new SecretKeySpec(Base64.getDecoder().decode(SECRET_KEY), SignatureAlgorithm.HS256.getJcaName());
+            Jws<Claims> jwt = Jwts.parserBuilder().setSigningKey(hmacKey).build().parseClaimsJws(tokenId);
+            Map<String, Object> headerMap = new HashMap<>();
+            headerMap.put(VALIDATION_KEY, jwt.getBody().get(VALIDATION_KEY));
+            headerMap.put(CUSTOMER_ID_KEY, jwt.getBody().get(REF_ID_KEY));
+            headerMap.put(USER_TYPE_KEY, jwt.getBody().get(USER_TYPE_KEY));
+            headerMap.put(EMAIL_ID_KEY, jwt.getBody().get(EMAIL_ID_KEY));
+            return headerMap;
+        } catch (Exception e) {
+            log.info("Exception occurred while token computation : ", e);
+        }
+        return null;
     }
 }

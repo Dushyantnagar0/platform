@@ -44,4 +44,10 @@ public class OtpRepositoryImpl implements OtpRepository {
         MongoTemplate mongoTemplate = getMongoTemplateForOtp();
         return mongoTemplate.findOne(Query.query(new Criteria().and("emailId").is(emailId)), EmailOtpBean.class);
     }
+
+    @Override
+    public EmailOtpBean getEmailOtpBeanByRefId(String refId) {
+        MongoTemplate mongoTemplate = getMongoTemplateForOtp();
+        return mongoTemplate.findOne(Query.query(new Criteria().and("refId").is(refId)), EmailOtpBean.class);
+    }
 }
