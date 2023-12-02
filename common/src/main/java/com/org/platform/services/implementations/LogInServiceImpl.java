@@ -48,7 +48,7 @@ public class LogInServiceImpl implements LogInService {
             // TODO : for testing
             return new LogInResponse(customerAccount.getCustomerId() + " " + otp);
         } catch (Exception e) {
-            throw new PlatformCoreException(FAILED_TO_SEND_OTP);
+            throw new PlatformCoreException(FAILED_TO_SEND_OTP, "something wrong occurred while sending OTP");
         }
     }
 
@@ -65,7 +65,7 @@ public class LogInServiceImpl implements LogInService {
             otpRepository.saveEmailOtpBean(emailOtpBean);
             return new OtpValidationResponse(token);
         } catch (Exception e) {
-            throw new PlatformCoreException(FAILED_TO_VALIDATE_OTP);
+            throw new PlatformCoreException(FAILED_TO_VALIDATE_OTP, "failed to validate OTP");
         }
     }
 

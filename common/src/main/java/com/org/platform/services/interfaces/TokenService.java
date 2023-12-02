@@ -7,5 +7,5 @@ import javax.servlet.http.HttpServletRequest;
 public interface TokenService {
 
     String generateJwtToken(TokenGenerationRequest tokenGenerationRequest, String accessType);
-    boolean validateJwtTokenAndCreateHeaderMap(HttpServletRequest httpRequest, String tokenId, String customerId, boolean isForAdminApi);
+    boolean validateJwtTokenAndCreateHeaderMap(HttpServletRequest httpRequest, boolean isForAdminApi);
 }

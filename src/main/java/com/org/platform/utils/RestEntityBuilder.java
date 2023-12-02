@@ -23,6 +23,7 @@ public class RestEntityBuilder {
     public static final String FAILED = "failed";
     public static final String ERROR_DETAILS = "errorDetails";
     public static final String ERROR_CODE = "errorCode";
+    public static final String ERROR_MESSAGE = "errorMessage";
     public static final String ERROR_KEY = "errorKey";
     public static final String DISPLAY_MESSAGE = "displayMessage";
     public static final String PARAMS = "params";

@@ -56,7 +56,9 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public boolean validateJwtTokenAndCreateHeaderMap(HttpServletRequest httpRequest, String tokenId, String customerId, boolean isForAdminApi) {
+    public boolean validateJwtTokenAndCreateHeaderMap(HttpServletRequest httpRequest, boolean isForAdminApi) {
+        String tokenId = httpRequest.getHeader(API_TOKEN_KEY);
+        String customerId = httpRequest.getHeader(CUSTOMER_ID_KEY);
         initialTokenValidation(tokenId, customerId);
         try {
             CustomerAccount customerAccount = customerAccountRepository.getCustomerAccountByCustomerId(customerId);

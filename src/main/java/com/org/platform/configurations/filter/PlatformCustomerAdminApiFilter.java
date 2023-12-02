@@ -14,10 +14,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INVALID_HEADERS;
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INVALID_TOKEN;
-import static com.org.platform.utils.HeaderConstants.CLIENT_ID_KEY;
+import static com.org.platform.utils.HeaderConstants.*;
+import static com.org.platform.utils.RestEntityBuilder.*;
 import static com.org.platform.utils.ServletFilterUtils.asHttp;
 import static com.org.platform.utils.ServletFilterUtils.forwardTheApiCall;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -36,28 +41,45 @@ public class PlatformCustomerAdminApiFilter implements Filter {
         HttpServletRequest httpRequest = asHttp(request);
         HttpServletResponse httpResponse = asHttp(response);
         try {
+            validateHeaders(httpRequest);
             String endPoint = httpRequest.getRequestURI();
             String customerIp = httpRequest.getHeader(CLIENT_ID_KEY);
-            if (isBlank(customerIp)) {
-                throw new PlatformCoreException(INVALID_HEADERS);
-            }
+
             ipRateLimiterService.checkHitsCountsAndUpdateThreshold(endPoint, customerIp);
             boolean isForAdminApi = (httpRequest.getRequestURI()).startsWith("/admin");
 
-            String tokenId = httpRequest.getHeader("api-token");
-            String customerId = httpRequest.getHeader("customerId");
-
             log.info("http request isForAdminApi : {}", isForAdminApi);
-            if (tokenService.validateJwtTokenAndCreateHeaderMap(httpRequest, tokenId, customerId, isForAdminApi)) {
+            if (tokenService.validateJwtTokenAndCreateHeaderMap(httpRequest, isForAdminApi)) {
                 forwardTheApiCall(request, response, chain);
             } else {
-                throw new PlatformCoreException(INVALID_TOKEN);
+                throw new PlatformCoreException(INVALID_TOKEN, "token is expired or incorrect");
             }
         } catch (PlatformCoreException e) {
-            httpResponse.setHeader("error code", e.getErrorCode());
-            httpResponse.setHeader("error message", e.getErrorMessage());
+            handleExceptionResponse(httpResponse, e);
+        }
+    }
+
+    private void validateHeaders(HttpServletRequest httpRequest) {
+        List<String> missingHeaders = new ArrayList<>();
+        if (isBlank(httpRequest.getHeader(CLIENT_ID_KEY))) missingHeaders.add(CLIENT_ID_KEY);
+        if (isBlank(httpRequest.getHeader(API_TOKEN_KEY))) missingHeaders.add(API_TOKEN_KEY);
+        if (isBlank(httpRequest.getHeader(CUSTOMER_ID_KEY))) missingHeaders.add(CUSTOMER_ID_KEY);
+
+        if (!missingHeaders.isEmpty()) {
+            throw new PlatformCoreException(INVALID_HEADERS, String.join(", ", missingHeaders) + " missing");
+        }
+    }
+
+    private void handleExceptionResponse(HttpServletResponse httpResponse, PlatformCoreException e) {
+        try (PrintWriter printWriter = httpResponse.getWriter()) {
+            httpResponse.setHeader(ERROR_CODE, e.getErrorCode());
+            httpResponse.setHeader(ERROR_MESSAGE, e.getErrorMessage());
+            httpResponse.setHeader(PARAMS, Arrays.toString(e.getParams()));
             httpResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            throw e;
+            printWriter.flush();
+            httpResponse.flushBuffer();
+        } catch (Exception exception) {
+            log.error("error in writing actionResponse to servlet");
         }
     }
 
