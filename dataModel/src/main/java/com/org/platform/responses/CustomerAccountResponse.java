@@ -1,21 +1,15 @@
-package com.org.platform.beans;
+package com.org.platform.responses;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Document
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CustomerAccount {
-    @Id
+public class CustomerAccountResponse {
     private String emailId;
     private String customerId;
     private String phoneNumber;
@@ -26,5 +20,4 @@ public class CustomerAccount {
     private String address2;
     private String city;
     private String zipCode;
-    private String token;
 }

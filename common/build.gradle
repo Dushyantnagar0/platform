@@ -44,6 +44,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
     implementation 'org.apache.commons:commons-lang3:3.9'
     implementation 'org.mongodb:mongo-java-driver:3.12.14'
+    implementation "org.mapstruct:mapstruct:1.4.2.Final"
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.4.2.Final"
 
 
     implementation 'io.github.openfeign:feign-core:12.4'

@@ -10,7 +10,7 @@ public class PlatformServletListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        // TODO : do something
+        // TODO : do something while starting your service
         log.info("CustomListener is initialized || application is deployed on the server");
     }
 

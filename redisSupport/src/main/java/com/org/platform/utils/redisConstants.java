@@ -20,6 +20,6 @@ public class redisConstants {
     public static final int REDIS_DB_INDEX = 0;
     public static final String REDIS_PASSWORD = "";
     public static final String REDIS_HOST = "localhost";
-    public static final int REDIS_PORT = 6379;
+    public static final int REDIS_PORT = Integer.parseInt(System.getenv("redis.port"));
 
 }

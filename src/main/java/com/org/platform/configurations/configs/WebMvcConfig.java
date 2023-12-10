@@ -1,3 +1,4 @@
+/*
 package com.org.platform.configurations.configs;
 
 import com.org.platform.errors.exceptionResolver.PlatformExceptionResolver;
@@ -19,3 +20,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
         resolvers.add(platformExceptionResolver);
     }
 }
+*/

@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INTERNAL_SERVER_ERROR;
+import static com.org.platform.utils.CommonUtils.handleExceptionAndCreateResponse;
+import static com.org.platform.utils.Constants.SOMETHING_WENT_WRONG;
 
 @Slf4j
 @UtilityClass
@@ -20,7 +22,7 @@ public class ServletFilterUtils {
         try {
             chain.doFilter(request, response);
         } catch (Exception e) {
-            throw new PlatformCoreException(INTERNAL_SERVER_ERROR);
+            handleExceptionAndCreateResponse(e, INTERNAL_SERVER_ERROR, SOMETHING_WENT_WRONG);
         }
     }
 

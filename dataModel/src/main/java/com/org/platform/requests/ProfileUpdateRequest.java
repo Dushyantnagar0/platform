@@ -9,9 +9,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TokenGenerationRequest {
-    private String emailId;
-    private String customerId;
-    private String hashedOtp;
-    private boolean valid;
+public class ProfileUpdateRequest {
+    private String phoneNumber;
+    private String firstName;
+    private String lastName;
+    private String address1;
+    private String address2;
+    private String city;
+    private String zipCode;
 }

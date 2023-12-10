@@ -44,10 +44,10 @@ public class HeaderContextService {
         headers.setUserId(httpServletRequest.getHeader(USER_ID_KEY));
         headers.setApiToken(httpServletRequest.getHeader(API_TOKEN_KEY));
         headers.setClientId(httpServletRequest.getHeader(CLIENT_ID_KEY));
-        headers.setEmailId((String) headerMap.get(EMAIL_ID_KEY));
-        headers.setCustomerId((String) headerMap.get(CUSTOMER_ID_KEY));
-        headers.setUserType((String) headerMap.get(USER_TYPE_KEY));
+        headers.setCustomerId( httpServletRequest.getHeader(CUSTOMER_ID_KEY));
         headers.setRequestId(httpServletRequest.getHeader(REQUEST_ID_KEY));
+        headers.setEmailId((String) headerMap.get(EMAIL_ID_KEY));
+        headers.setUserType((String) headerMap.get(USER_TYPE_KEY));
         headerContext.set(headers);
     }
 

@@ -1,13 +1,13 @@
 package com.org.platform.services.implementations;
 
 import com.org.platform.beans.CustomerAccount;
-import com.org.platform.beans.EmailOtpBean;
 import com.org.platform.repos.interfaces.CustomerAccountRepository;
-import com.org.platform.repos.interfaces.OtpRepository;
 import com.org.platform.requests.TokenGenerationRequest;
 import com.org.platform.services.interfaces.TokenService;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,6 @@ import static java.util.Objects.nonNull;
 @RequiredArgsConstructor
 public class TokenServiceImpl implements TokenService {
 
-    private final OtpRepository otpRepository;
     private final CustomerAccountRepository customerAccountRepository;
 
     @Override
@@ -43,7 +42,7 @@ public class TokenServiceImpl implements TokenService {
         Key hmacKey = new SecretKeySpec(Base64.getDecoder().decode(SECRET_KEY), SignatureAlgorithm.HS256.getJcaName());
         return Jwts.builder()
                 .claim(EMAIL_ID_KEY, tokenGenerationRequest.getEmailId())
-                .claim(REF_ID_KEY, tokenGenerationRequest.getRefId())
+                .claim(CUSTOMER_ID_KEY, tokenGenerationRequest.getCustomerId())
                 .claim(UNIQUE_ID_KEY, tokenGenerationRequest.getHashedOtp())
                 .claim(VALIDATION_KEY, tokenGenerationRequest.isValid())
                 .claim(USER_TYPE_KEY, accessType)
@@ -61,12 +60,12 @@ public class TokenServiceImpl implements TokenService {
         String customerId = httpRequest.getHeader(CUSTOMER_ID_KEY);
         initialTokenValidation(tokenId, customerId);
         try {
+//            TODO : don't access DB instead use cache
             CustomerAccount customerAccount = customerAccountRepository.getCustomerAccountByCustomerId(customerId);
             if (nonNull(customerAccount)) {
                 Map<String, Object> headerMap = createHeaderMapFromToken(tokenId);
-                EmailOtpBean emailOtpBean = otpRepository.getEmailOtpBeanByEmailId(customerAccount.getEmailId());
                 createHeaderContextFromHttpHeaders(httpRequest, headerMap);
-                return nonNull(emailOtpBean) && tokenId.equals(emailOtpBean.getToken()) && (!isForAdminApi || ADMIN.name().equals(headerMap.get(USER_TYPE_KEY)));
+                return nonNull(customerAccount) && tokenId.equals(customerAccount.getToken()) && (!isForAdminApi || ADMIN.name().equals(headerMap.get(USER_TYPE_KEY)));
             }
         } catch (Exception e) {
             return false;
@@ -80,7 +79,6 @@ public class TokenServiceImpl implements TokenService {
             Jws<Claims> jwt = Jwts.parserBuilder().setSigningKey(hmacKey).build().parseClaimsJws(tokenId);
             Map<String, Object> headerMap = new HashMap<>();
             headerMap.put(VALIDATION_KEY, jwt.getBody().get(VALIDATION_KEY));
-            headerMap.put(CUSTOMER_ID_KEY, jwt.getBody().get(REF_ID_KEY));
             headerMap.put(USER_TYPE_KEY, jwt.getBody().get(USER_TYPE_KEY));
             headerMap.put(EMAIL_ID_KEY, jwt.getBody().get(EMAIL_ID_KEY));
             return headerMap;

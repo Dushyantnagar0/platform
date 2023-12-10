@@ -7,8 +7,10 @@ import com.org.platform.services.interfaces.RetryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Map;
 
@@ -32,6 +34,13 @@ public class PublicApis {
     @GetMapping("/service-name")
     public ResponseEntity<Map<String, Object>> getServiceName(){
         return okResponseEntity(service_name);
+    }
+
+    @GetMapping(value = "/html", produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView getSampleHtmlResponse(){
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("platform.html");
+        return modelAndView;
     }
 
     @GetMapping("/context")

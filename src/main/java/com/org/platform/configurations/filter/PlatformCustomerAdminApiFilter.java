@@ -5,24 +5,22 @@ import com.org.platform.services.interfaces.IpRateLimiterService;
 import com.org.platform.services.interfaces.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INVALID_HEADERS;
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INVALID_TOKEN;
 import static com.org.platform.utils.HeaderConstants.*;
-import static com.org.platform.utils.RestEntityBuilder.*;
+import static com.org.platform.utils.RestEntityBuilder.createCustomErrorResponseBody;
 import static com.org.platform.utils.ServletFilterUtils.asHttp;
 import static com.org.platform.utils.ServletFilterUtils.forwardTheApiCall;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -52,9 +50,10 @@ public class PlatformCustomerAdminApiFilter implements Filter {
             if (tokenService.validateJwtTokenAndCreateHeaderMap(httpRequest, isForAdminApi)) {
                 forwardTheApiCall(request, response, chain);
             } else {
+                log.info("token is expired or incorrect");
                 throw new PlatformCoreException(INVALID_TOKEN, "token is expired or incorrect");
             }
-        } catch (PlatformCoreException e) {
+        } catch (Exception e) {
             handleExceptionResponse(httpResponse, e);
         }
     }
@@ -66,20 +65,17 @@ public class PlatformCustomerAdminApiFilter implements Filter {
         if (isBlank(httpRequest.getHeader(CUSTOMER_ID_KEY))) missingHeaders.add(CUSTOMER_ID_KEY);
 
         if (!missingHeaders.isEmpty()) {
-            throw new PlatformCoreException(INVALID_HEADERS, String.join(", ", missingHeaders) + " missing");
+            log.info(String.join(", ", missingHeaders) + " missing in headers");
+            throw new PlatformCoreException(INVALID_HEADERS, String.join(", ", missingHeaders) + " missing in headers");
+//            throw new RuntimeException(String.join(", ", missingHeaders) + " missing in headers");
         }
     }
 
-    private void handleExceptionResponse(HttpServletResponse httpResponse, PlatformCoreException e) {
-        try (PrintWriter printWriter = httpResponse.getWriter()) {
-            httpResponse.setHeader(ERROR_CODE, e.getErrorCode());
-            httpResponse.setHeader(ERROR_MESSAGE, e.getErrorMessage());
-            httpResponse.setHeader(PARAMS, Arrays.toString(e.getParams()));
-            httpResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            printWriter.flush();
-            httpResponse.flushBuffer();
-        } catch (Exception exception) {
-            log.error("error in writing actionResponse to servlet");
+    private void handleExceptionResponse(HttpServletResponse httpResponse, Exception e) {
+        try {
+            httpResponse.getWriter().write(createCustomErrorResponseBody(httpResponse, e));
+        } catch (IOException ignored) {
+            log.error("error while writing http response : ", ignored);
         }
     }
 

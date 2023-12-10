@@ -4,7 +4,8 @@ import com.org.platform.beans.IpRateLimit;
 
 public interface IpRateLimiterRepository {
 
-    void cleanupExpiredDocuments();
-    long countHitsInLastDefinedTime(String endPoint);
+    void cleanupExpiredDocuments(String customerIp);
+    long countTotalHitsInLastDefinedTime(String endPoint);
+    long countHitsFromIpInLastDefinedTime(String customerIp, String endPoint);
     void incrementHitCountForEndPoint(IpRateLimit ipRateLimit);
 }

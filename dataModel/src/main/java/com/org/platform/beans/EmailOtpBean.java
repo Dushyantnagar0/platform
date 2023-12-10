@@ -15,9 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EmailOtpBean {
-
     @Id
     private String emailId;
     private String hashedOtp;
-    private String token;
 }
