@@ -7,5 +7,6 @@ public interface PlatformMongoService {
 
     MongoClient getMongoClient();
     MongoTemplate getMongoTemplate(String dbName);
+    MongoTemplate getMongoTemplateCached(String dbName);
 
 }

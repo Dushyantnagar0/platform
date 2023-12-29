@@ -5,6 +5,7 @@ import com.org.platform.beans.EmailOtpBean;
 public interface OtpRepository {
 
     void saveEmailOtpBean(String refId, EmailOtpBean emailOtpBean);
+    void saveEmailOtpBeanAsync(String refId, EmailOtpBean emailOtpBean);
     EmailOtpBean getEmailOtpBeanByRefId(String refId);
 
 }

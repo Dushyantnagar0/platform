@@ -7,10 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 
 import static java.util.Objects.isNull;
 import static org.apache.logging.log4j.util.Strings.isBlank;
@@ -60,12 +58,21 @@ public class RestEntityBuilder {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).contentType(MediaType.APPLICATION_JSON_UTF8).body(response);
     }
 
-    public static String createCustomErrorResponseBody(HttpServletResponse httpResponse, Exception e) {
+    public static void handleExceptionResponse(HttpServletResponse httpResponse, Exception e) {
+        try {
+            httpResponse.getWriter().write(Objects.requireNonNull(createCustomErrorResponseBody(httpResponse, e)));
+        } catch (IOException ignored) {
+            log.error("error while writing http response : ", ignored);
+        }
+    }
+
+    private static String createCustomErrorResponseBody(HttpServletResponse httpResponse, Exception e) {
         try {
             return new ObjectMapper().writeValueAsString(createServletFilterErrorResponse(httpResponse, e));
-        } catch (JsonProcessingException ex) {
-            throw new RuntimeException(ex.getLocalizedMessage());
+        } catch (JsonProcessingException ignored) {
+            log.error("error while writing processing into json : ", ignored);
         }
+        return null;
     }
 
     private static Map<String, Object> createServletFilterErrorResponse(HttpServletResponse httpResponse, Exception exception) {

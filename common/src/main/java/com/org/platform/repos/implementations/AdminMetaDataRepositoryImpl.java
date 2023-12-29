@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 import static com.org.platform.utils.Constants.PLATFORM_GLOBAL_DB;
 
 @Slf4j
@@ -23,7 +25,7 @@ public class AdminMetaDataRepositoryImpl implements AdminMetaDataRepository {
 
 
     public MongoTemplate getMongoTemplateForUserMetaData() {
-        return platformMongoService.getMongoTemplate(PLATFORM_GLOBAL_DB);
+        return platformMongoService.getMongoTemplateCached(PLATFORM_GLOBAL_DB);
     }
 
     @Override
@@ -36,5 +38,11 @@ public class AdminMetaDataRepositoryImpl implements AdminMetaDataRepository {
     public UserMetaData fetchUserMetaDataFromEmailId(String emailId) {
         MongoTemplate mongoTemplate = getMongoTemplateForUserMetaData();
         return mongoTemplate.findOne(Query.query(new Criteria().and("emailId").is(emailId)) , UserMetaData.class);
+    }
+
+    @Override
+    public List<UserMetaData> fetchAllUserMetaData() {
+        MongoTemplate mongoTemplate = getMongoTemplateForUserMetaData();
+        return mongoTemplate.findAll(UserMetaData.class);
     }
 }

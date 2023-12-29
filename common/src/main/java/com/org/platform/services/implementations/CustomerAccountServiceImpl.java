@@ -9,6 +9,7 @@ import com.org.platform.requests.ProfileUpdateRequest;
 import com.org.platform.responses.CustomerAccountResponse;
 import com.org.platform.services.interfaces.CustomerAccountService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import static com.org.platform.services.HeaderContextService.getCurrentCustomerId;
@@ -25,14 +26,14 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
 
     public CustomerAccount getCustomerAccountByEmail(String emailId) {
         if(isNotBlank(emailId)) {
-            return customerAccountRepository.getCustomerAccountByEmailId(emailId);
+            return customerAccountRepository.getCustomerAccountByEmailIdCached(emailId);
         }
         return null;
     }
 
     public CustomerAccount getCustomerAccountByCustomerId(String customerId) {
         if(isNotBlank(customerId)) {
-            return customerAccountRepository.getCustomerAccountByCustomerId(customerId);
+            return customerAccountRepository.getCustomerAccountByCustomerIdCached(customerId);
         }
         return null;
     }
@@ -40,19 +41,27 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
     public CustomerAccount createOrUpdateCustomerAccount(CustomerAccountRequest customerAccountRequest) {
         if(isNull(customerAccountRequest)) return null;
         CustomerAccount customerAccount = null;
-        if(isNotBlank(customerAccountRequest.getEmailId())) customerAccount = customerAccountRepository.getCustomerAccountByEmailId(customerAccountRequest.getEmailId());
+        if(isNotBlank(customerAccountRequest.getEmailId())) customerAccount = customerAccountRepository.getCustomerAccountByEmailIdCached(customerAccountRequest.getEmailId());
         customerAccount = customerAccountHelper.createNewOrUpdateCustomerAccount(customerAccount, customerAccountRequest);
         return saveCustomerAccount(customerAccount);
     }
 
+    @Override
     public CustomerAccount saveCustomerAccount(CustomerAccount customerAccount) {
         if(isNull(customerAccount)) return null;
         return customerAccountRepository.saveCustomerAccount(customerAccount);
     }
 
     @Override
+    @Async("asyncThreadPool")
+    public void saveCustomerAccountAsync(CustomerAccount customerAccount) {
+        if(isNull(customerAccount)) return;
+        customerAccountRepository.saveCustomerAccount(customerAccount);
+    }
+
+    @Override
     public CustomerAccountResponse updateCustomerAccount(ProfileUpdateRequest profileUpdateRequest) {
-        CustomerAccount customerAccount = customerAccountRepository.getCustomerAccountByCustomerId(getCurrentCustomerId());
+        CustomerAccount customerAccount = customerAccountRepository.getCustomerAccountByCustomerIdCached(getCurrentCustomerId());
         customerAccountHelper.populateCustomerAccountToLatest(profileUpdateRequest, customerAccount);
         return platformMapper.convertToCustomerAccountResponse(customerAccountRepository.saveCustomerAccount(customerAccount));
     }

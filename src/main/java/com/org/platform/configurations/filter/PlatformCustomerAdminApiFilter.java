@@ -1,5 +1,6 @@
 package com.org.platform.configurations.filter;
 
+import com.org.platform.annotations.TrackRunTime;
 import com.org.platform.errors.exceptions.PlatformCoreException;
 import com.org.platform.services.interfaces.IpRateLimiterService;
 import com.org.platform.services.interfaces.TokenService;
@@ -13,14 +14,13 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INVALID_HEADERS;
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.INVALID_TOKEN;
 import static com.org.platform.utils.HeaderConstants.*;
-import static com.org.platform.utils.RestEntityBuilder.createCustomErrorResponseBody;
+import static com.org.platform.utils.RestEntityBuilder.handleExceptionResponse;
 import static com.org.platform.utils.ServletFilterUtils.asHttp;
 import static com.org.platform.utils.ServletFilterUtils.forwardTheApiCall;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -36,14 +36,14 @@ public class PlatformCustomerAdminApiFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
+        long startTime = System.currentTimeMillis();
         HttpServletRequest httpRequest = asHttp(request);
         HttpServletResponse httpResponse = asHttp(response);
         try {
             validateHeaders(httpRequest);
-            String endPoint = httpRequest.getRequestURI();
             String customerIp = httpRequest.getHeader(CLIENT_ID_KEY);
 
-            ipRateLimiterService.checkHitsCountsAndUpdateThreshold(endPoint, customerIp);
+            ipRateLimiterService.checkHitsCountsAndUpdateThreshold(customerIp);
             boolean isForAdminApi = (httpRequest.getRequestURI()).startsWith("/admin");
 
             log.info("http request isForAdminApi : {}", isForAdminApi);
@@ -55,6 +55,9 @@ public class PlatformCustomerAdminApiFilter implements Filter {
             }
         } catch (Exception e) {
             handleExceptionResponse(httpResponse, e);
+        } finally {
+            long endTime = System.currentTimeMillis();
+            log.info("total time taken : {} by this api : {}", endTime - startTime + "ms", httpRequest.getRequestURI());
         }
     }
 
@@ -62,20 +65,12 @@ public class PlatformCustomerAdminApiFilter implements Filter {
         List<String> missingHeaders = new ArrayList<>();
         if (isBlank(httpRequest.getHeader(CLIENT_ID_KEY))) missingHeaders.add(CLIENT_ID_KEY);
         if (isBlank(httpRequest.getHeader(API_TOKEN_KEY))) missingHeaders.add(API_TOKEN_KEY);
-        if (isBlank(httpRequest.getHeader(CUSTOMER_ID_KEY))) missingHeaders.add(CUSTOMER_ID_KEY);
+//        if (isBlank(httpRequest.getHeader(CUSTOMER_ID_KEY))) missingHeaders.add(CUSTOMER_ID_KEY);
 
         if (!missingHeaders.isEmpty()) {
             log.info(String.join(", ", missingHeaders) + " missing in headers");
             throw new PlatformCoreException(INVALID_HEADERS, String.join(", ", missingHeaders) + " missing in headers");
 //            throw new RuntimeException(String.join(", ", missingHeaders) + " missing in headers");
-        }
-    }
-
-    private void handleExceptionResponse(HttpServletResponse httpResponse, Exception e) {
-        try {
-            httpResponse.getWriter().write(createCustomErrorResponseBody(httpResponse, e));
-        } catch (IOException ignored) {
-            log.error("error while writing http response : ", ignored);
         }
     }
 

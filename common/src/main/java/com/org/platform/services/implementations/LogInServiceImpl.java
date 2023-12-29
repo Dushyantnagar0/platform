@@ -2,6 +2,7 @@ package com.org.platform.services.implementations;
 
 import com.org.platform.beans.CustomerAccount;
 import com.org.platform.beans.EmailOtpBean;
+import com.org.platform.enums.UserAccessType;
 import com.org.platform.helpers.CustomerAccountHelper;
 import com.org.platform.requests.CustomerAccountRequest;
 import com.org.platform.requests.LogInRequest;
@@ -24,6 +25,7 @@ import static com.org.platform.utils.Constants.FAILED_TO_VALIDATE_OTP_MESSAGE;
 import static com.org.platform.utils.Constants.SOMETHING_WENT_WRONG_WHILE_SENDING_OTP;
 import static com.org.platform.utils.ValidationUtils.logInValidation;
 import static com.org.platform.utils.ValidationUtils.otpValidationInValidation;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Component
@@ -57,11 +59,12 @@ public class LogInServiceImpl implements LogInService {
             String hashedOtp = HashUtils.hash(otpValidationRequest.getOtp());
             EmailOtpBean emailOtpBean = otpService.validateOtp(hashedOtp, otpValidationRequest);
             String accessType = adminMetaDataService.fetchAccessLevelForAnEmailId(emailOtpBean.getEmailId());
+            accessType = isBlank(accessType) ? UserAccessType.CUSTOMER.name() : accessType;
             CustomerAccount customerAccount = customerAccountService.getCustomerAccountByEmail(emailOtpBean.getEmailId());
             String token = tokenService.generateJwtToken(new TokenGenerationRequest(emailOtpBean.getEmailId(), customerAccount.getCustomerId(), hashedOtp ,true), accessType);
             customerAccount.setToken(token);
             customerAccount.setUserAccessType(accessType);
-            customerAccountService.saveCustomerAccount(customerAccount);
+            customerAccountService.saveCustomerAccountAsync(customerAccount);
             return new OtpValidationResponse(token);
         } catch (Exception e) {
             handleExceptionAndCreateResponse(e, FAILED_TO_VALIDATE_OTP, FAILED_TO_VALIDATE_OTP_MESSAGE);
@@ -75,7 +78,7 @@ public class LogInServiceImpl implements LogInService {
         log.info("emailId in logout api : {}", emailId);
         CustomerAccount customerAccount = customerAccountService.getCustomerAccountByEmail(emailId);
         customerAccount.setToken(null);
-        customerAccountService.saveCustomerAccount(customerAccount);
+        customerAccountService.saveCustomerAccountAsync(customerAccount);
     }
 
     @Override

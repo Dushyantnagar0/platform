@@ -1,7 +1,7 @@
 package com.org.platform.helpers;
 
 import com.org.platform.beans.CustomerAccount;
-import com.org.platform.mappers.PlatformMapper;
+import com.org.platform.mappers.PlatformEnhancedMapper;
 import com.org.platform.requests.CustomerAccountRequest;
 import com.org.platform.requests.LogInRequest;
 import com.org.platform.requests.ProfileUpdateRequest;
@@ -19,7 +19,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @RequiredArgsConstructor
 public class CustomerAccountHelper {
 
-    private final PlatformMapper platformMapper;
+    private final PlatformEnhancedMapper platformEnhancedMapper;
 
     public CustomerAccount createNewOrUpdateCustomerAccount(CustomerAccount customerAccount, CustomerAccountRequest customerAccountRequest) {
         if(isNull(customerAccount)) {
@@ -27,13 +27,7 @@ public class CustomerAccountHelper {
         }
         if(isBlank(customerAccount.getCustomerId())) customerAccount.setCustomerId(UUID.randomUUID().toString());
         if(isBlank(customerAccount.getEmailId())) customerAccount.setEmailId(customerAccountRequest.getEmailId());
-        customerAccount.setPhoneNumber(customerAccount.getPhoneNumber());
-        customerAccount.setFirstName(customerAccountRequest.getFirstName());
-        customerAccount.setLastName(customerAccountRequest.getLastName());
-        customerAccount.setAddress1(customerAccountRequest.getAddress1());
-        customerAccount.setAddress2(customerAccountRequest.getAddress2());
-        customerAccount.setCity(customerAccountRequest.getCity());
-        customerAccount.setZipCode(customerAccountRequest.getZipCode());
+        platformEnhancedMapper.populateCustomerAccountFromCustomerAccountRequest(customerAccountRequest, customerAccount);
         return customerAccount;
     }
 
@@ -47,6 +41,6 @@ public class CustomerAccountHelper {
 
     public void populateCustomerAccountToLatest(ProfileUpdateRequest profileUpdateRequest, CustomerAccount customerAccount) {
         if(isNull(customerAccount) || isNull(profileUpdateRequest)) return;
-        platformMapper.populateCustomerAccountFromProfileUpdate(profileUpdateRequest, customerAccount);
+        platformEnhancedMapper.populateCustomerAccountFromProfileUpdate(profileUpdateRequest, customerAccount);
     }
 }

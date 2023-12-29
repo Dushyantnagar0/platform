@@ -30,7 +30,7 @@ public class OtpServiceImpl implements OtpService {
         String hashedOtp = HashUtils.hash(otp);
 //        TODO : send OTP email
 //        emailService.sendEmail(emailId, otp);
-        otpRepository.saveEmailOtpBean(refId, new EmailOtpBean(emailId, hashedOtp));
+        otpRepository.saveEmailOtpBeanAsync(refId, new EmailOtpBean(emailId, hashedOtp));
         return new LogInResponse(refId + " " + otp);
     }
 

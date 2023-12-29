@@ -10,5 +10,6 @@ public interface CustomerAccountService {
     CustomerAccount getCustomerAccountByCustomerId(String customerId);
     CustomerAccount createOrUpdateCustomerAccount(CustomerAccountRequest customerAccountRequest);
     CustomerAccount saveCustomerAccount(CustomerAccount customerAccount);
+    void saveCustomerAccountAsync(CustomerAccount customerAccount);
     CustomerAccountResponse updateCustomerAccount(ProfileUpdateRequest profileUpdateRequest);
 }

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
@@ -24,6 +25,13 @@ public class OtpRepositoryImpl implements OtpRepository {
 
     @Override
     public void saveEmailOtpBean(String refId, EmailOtpBean emailOtpBean) {
+        platformRedisService.save(refId, emailOtpBean);
+        platformRedisService.setExpire(refId, 900);
+    }
+
+    @Override
+    @Async("asyncThreadPool")
+    public void saveEmailOtpBeanAsync(String refId, EmailOtpBean emailOtpBean) {
         platformRedisService.save(refId, emailOtpBean);
         platformRedisService.setExpire(refId, 900);
     }

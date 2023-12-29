@@ -6,7 +6,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import java.time.Duration;
 
 @UtilityClass
-public class redisConstants {
+public class PlatformRedisConstants {
 
     public static final RedisSerializer<Object> json = RedisSerializer.json();
     public static final long CONNECT_TIMEOUT_IN_SECONDS = 60;

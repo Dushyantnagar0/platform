@@ -1,19 +1,17 @@
 package com.org.platform.repos.implementations;
 
-import com.org.platform.beans.IpRateLimit;
 import com.org.platform.repos.interfaces.IpRateLimiterRepository;
-import com.org.platform.services.interfaces.PlatformMongoService;
+import com.org.platform.services.interfaces.PlatformRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import org.springframework.scheduling.annotation.Async;
 
-import static com.org.platform.utils.Constants.PLATFORM_GLOBAL_DB;
+import java.util.Set;
+
+import static java.util.Objects.nonNull;
 
 @Slf4j
 @Component
@@ -21,49 +19,48 @@ import static com.org.platform.utils.Constants.PLATFORM_GLOBAL_DB;
 @RequiredArgsConstructor
 public class IpRateLimiterRepositoryImpl implements IpRateLimiterRepository {
 
-    private final PlatformMongoService platformMongoService;
+    private final PlatformRedisService platformRedisService;
     @Value("${ip.rate.limit.document.ttl}")
     private Long ipRateLimitTtl;
 
 
-    public MongoTemplate getMongoTemplateForIpRateLimiter() {
-        return platformMongoService.getMongoTemplate(PLATFORM_GLOBAL_DB);
-    }
-
 //    @Scheduled(fixedRate = 10000) // Run every 10 secs
-    public void cleanupExpiredDocuments(String customerIp) {
-        log.info("clearing expired documents : ");
-        MongoTemplate mongoTemplate = getMongoTemplateForIpRateLimiter();
-        Query query = new Query();
-        query.addCriteria(Criteria.where("createdTime").lt(System.currentTimeMillis() - ipRateLimitTtl));
-//        query.addCriteria(Criteria.where("customerIp").is(customerIp));
-        mongoTemplate.remove(query, IpRateLimit.class);
-    }
-
-//    use aggregator
-    @Override
-    public long countTotalHitsInLastDefinedTime(String endPoint) {
-        MongoTemplate mongoTemplate = getMongoTemplateForIpRateLimiter();
-        Query query = new Query();
-        query.addCriteria(Criteria.where("deleted").is(false));
-//        query.addCriteria(Criteria.where("createdTime").lte(System.currentTimeMillis() - ipRateLimitTtl));
-        query.addCriteria(Criteria.where("endPoint").gte(endPoint));
-        return mongoTemplate.count(query, IpRateLimit.class);
+    public void cleanupExpiredDocuments(String customerIp, long currentTimestamp) {
+        long roundedTimestamp = currentTimestamp / ipRateLimitTtl * ipRateLimitTtl;
+        String redisIpCacheKey = customerIp + ":" + roundedTimestamp;
+        log.info("clearing expired documents : {}", redisIpCacheKey);
+        long oldestValidTimestamp = currentTimestamp - ipRateLimitTtl;
+        Set<String> keys = platformRedisService.getKeys(customerIp + ":*");
+        if (nonNull(keys)) {
+            for (String key : keys) {
+                long ts = Long.parseLong(key.split(":")[1]);
+                if (ts < oldestValidTimestamp) {
+                    platformRedisService.remove(redisIpCacheKey);
+                }
+            }
+        }
     }
 
     @Override
-    public long countHitsFromIpInLastDefinedTime(String customerIp, String endPoint) {
-        MongoTemplate mongoTemplate = getMongoTemplateForIpRateLimiter();
-        Query query = new Query();
-        query.addCriteria(Criteria.where("deleted").is(false));
-        query.addCriteria(Criteria.where("customerIp").is(customerIp));
-        query.addCriteria(Criteria.where("endPoint").gte(endPoint));
-        return mongoTemplate.count(query, IpRateLimit.class);
+    public long countHitsFromIpInLastDefinedTime(String customerIp) {
+        long totalRequests = 0;
+        Set<String> keys = platformRedisService.getKeys(customerIp + ":*");
+        if (nonNull(keys)) {
+            for (String k : keys) {
+                totalRequests += ((Integer) platformRedisService.get(k)).longValue();
+            }
+        }
+        return totalRequests;
     }
 
     @Override
-    public void incrementHitCountForEndPoint(IpRateLimit ipRateLimit) {
-        MongoTemplate mongoTemplate = getMongoTemplateForIpRateLimiter();
-        mongoTemplate.save(ipRateLimit);
+    @Async("asyncThreadPool")
+    public void incrementHitCountForEndPoint(String customerIp, long currentTimestamp) {
+        log.info("Running in thread inside : {}", Thread.currentThread().getName());
+        long roundedTimestamp = currentTimestamp / ipRateLimitTtl * ipRateLimitTtl;
+        String redisIpCacheKey = customerIp + ":" + roundedTimestamp;
+        log.info("redisIpCacheKey in incrementHitCountForEndPoint : {}", redisIpCacheKey);
+        platformRedisService.increment(redisIpCacheKey, 1);
+        platformRedisService.setExpire(redisIpCacheKey, ipRateLimitTtl);
     }
 }

@@ -1,9 +1,13 @@
 package com.org.platform.services.implementations;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.org.platform.services.interfaces.RedisTemplateAccessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -15,21 +19,40 @@ import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
-import static com.org.platform.utils.redisConstants.*;
-import static com.org.platform.utils.redisConstants.THREAD_WAIT_TIME_WHILE_BORROWING_MILLIS;
+import static com.org.platform.utils.PlatformRedisConstants.*;
+import static com.org.platform.utils.PlatformRedisConstants.THREAD_WAIT_TIME_WHILE_BORROWING_MILLIS;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class RedisTemplateAccessorImpl implements RedisTemplateAccessor {
 
     RedisTemplate<String, Object> globalRedisTemplate;
+    private static LoadingCache<String, RedisTemplate<String, Object>> redisTemplateLoadingCache;
 
     @PostConstruct
     private void postConstruct(){
-        globalRedisTemplate  = getDefaultRedisTemplate();
+        globalRedisTemplate  = redisTemplateLoadingCache.getUnchecked("REDIS");
         globalRedisTemplate.setValueSerializer(RedisSerializer.json());
+    }
+
+    public RedisTemplateAccessorImpl() {
+
+        redisTemplateLoadingCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(24, TimeUnit.HOURS)
+//                number of records
+                .maximumSize(10)
+                .build(
+                        new CacheLoader<>() {
+                            @Override
+                            public RedisTemplate<String, Object> load(@NotNull String key) {
+                                log.info("loading cache is null for redis template so fetching form DB : ");
+                                return getDefaultRedisTemplate();
+                            }
+                        }
+                );
+
     }
 
     public RedisTemplate<String, Object> getGlobalRedisTemplate() {
