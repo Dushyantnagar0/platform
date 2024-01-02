@@ -1,15 +1,19 @@
 package com.org.platform.api.publicApis;
 
+import com.org.platform.annotations.PrintJson;
+import com.org.platform.annotations.TrackRunTime;
 import com.org.platform.requests.LogInRequest;
 import com.org.platform.requests.OtpValidationRequest;
-import com.org.platform.services.HeaderContextService;
+import com.org.platform.services.interfaces.EventSender;
 import com.org.platform.services.interfaces.LogInService;
 import com.org.platform.services.interfaces.RetryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Map;
 
@@ -29,13 +33,22 @@ public class PublicApis {
 
     private final LogInService logInService;
     private final RetryService retryService;
+    private final EventSender eventSender;
 
     @GetMapping("/service-name")
     public ResponseEntity<Map<String, Object>> getServiceName(){
         return okResponseEntity(service_name);
     }
 
+    @GetMapping(value = "/html", produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView getSampleHtmlResponse(){
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("platform.html");
+        return modelAndView;
+    }
+
     @GetMapping("/context")
+    @PrintJson
     public ResponseEntity<Map<String, Object>> getPublicApiContext(){
         return okResponseEntity(getContext());
     }
@@ -53,6 +66,12 @@ public class PublicApis {
     @GetMapping("/retry")
     public ResponseEntity<Map<String, Object>> retryApi(){
         retryService.retry();
+        return okResponseEntity("Ok");
+    }
+
+    @PostMapping("/send/event/{topic}")
+    public ResponseEntity<Map<String, Object>> sendEvent(@PathVariable("topic") String topic, @RequestBody Object event){
+        eventSender.sendMessage(topic, event);
         return okResponseEntity("Ok");
     }
 

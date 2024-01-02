@@ -2,9 +2,8 @@ package com.org.platform.services.implementations;
 
 import com.org.platform.beans.CustomerAccount;
 import com.org.platform.beans.EmailOtpBean;
-import com.org.platform.errors.exceptions.PlatformCoreException;
+import com.org.platform.enums.UserAccessType;
 import com.org.platform.helpers.CustomerAccountHelper;
-import com.org.platform.repos.interfaces.OtpRepository;
 import com.org.platform.requests.CustomerAccountRequest;
 import com.org.platform.requests.LogInRequest;
 import com.org.platform.requests.OtpValidationRequest;
@@ -19,10 +18,14 @@ import org.springframework.stereotype.Component;
 
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.FAILED_TO_SEND_OTP;
 import static com.org.platform.errors.errorCodes.PlatformErrorCodes.FAILED_TO_VALIDATE_OTP;
+import static com.org.platform.services.HeaderContextService.getCurrentCustomerId;
 import static com.org.platform.services.HeaderContextService.getCurrentUserEmailId;
+import static com.org.platform.utils.CommonUtils.handleExceptionAndCreateResponse;
+import static com.org.platform.utils.Constants.FAILED_TO_VALIDATE_OTP_MESSAGE;
+import static com.org.platform.utils.Constants.SOMETHING_WENT_WRONG_WHILE_SENDING_OTP;
 import static com.org.platform.utils.ValidationUtils.logInValidation;
 import static com.org.platform.utils.ValidationUtils.otpValidationInValidation;
-import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Component
@@ -30,7 +33,6 @@ import static java.util.Objects.nonNull;
 public class LogInServiceImpl implements LogInService {
 
     private final OtpService otpService;
-    private final OtpRepository otpRepository;
     private final TokenService tokenService;
     private final CustomerAccountService customerAccountService;
     private final CustomerAccountHelper customerAccountHelper;
@@ -42,38 +44,48 @@ public class LogInServiceImpl implements LogInService {
         logInValidation(logInRequest);
         try {
             CustomerAccountRequest customerAccountRequest = customerAccountHelper.createCustomerAccountCreateRequest(logInRequest);
-            CustomerAccount customerAccount = customerAccountService.createOrUpdateCustomerAccount(customerAccountRequest);
-            // TODO : save hashed OTP with refId in cache
-            String otp = otpService.sendAndSaveOtp(logInRequest.getEmailId());
-            // TODO : for testing
-            return new LogInResponse(customerAccount.getCustomerId() + " " + otp);
+            customerAccountService.createOrUpdateCustomerAccount(customerAccountRequest);
+            return otpService.sendAndSaveOtp(logInRequest.getEmailId());
         } catch (Exception e) {
-            throw new PlatformCoreException(FAILED_TO_SEND_OTP);
+            handleExceptionAndCreateResponse(e, FAILED_TO_SEND_OTP, SOMETHING_WENT_WRONG_WHILE_SENDING_OTP);
         }
+        return null;
     }
 
     @Override
     public OtpValidationResponse validateOtp(OtpValidationRequest otpValidationRequest) {
         otpValidationInValidation(otpValidationRequest);
         try {
-            String emailId = customerAccountService.getEmailIdFromRefId(otpValidationRequest.getRefId());
             String hashedOtp = HashUtils.hash(otpValidationRequest.getOtp());
-            EmailOtpBean emailOtpBean = otpService.validateOtp(hashedOtp, emailId);
-            String accessType = adminMetaDataService.fetchAccessLevelForAnEmailId(emailId);
-            String token = tokenService.generateJwtToken(new TokenGenerationRequest(emailOtpBean.getEmailId(), otpValidationRequest.getRefId(), hashedOtp ,true), accessType);
-            emailOtpBean.setToken(token);
-            otpRepository.saveEmailOtpBean(emailOtpBean);
+            EmailOtpBean emailOtpBean = otpService.validateOtp(hashedOtp, otpValidationRequest);
+            String accessType = adminMetaDataService.fetchAccessLevelForAnEmailId(emailOtpBean.getEmailId());
+            accessType = isBlank(accessType) ? UserAccessType.CUSTOMER.name() : accessType;
+            CustomerAccount customerAccount = customerAccountService.getCustomerAccountByEmail(emailOtpBean.getEmailId());
+            String token = tokenService.generateJwtToken(new TokenGenerationRequest(emailOtpBean.getEmailId(), customerAccount.getCustomerId(), hashedOtp ,true), accessType);
+            customerAccount.setToken(token);
+            customerAccount.setUserAccessType(accessType);
+            customerAccountService.saveCustomerAccountAsync(customerAccount);
             return new OtpValidationResponse(token);
         } catch (Exception e) {
-            throw new PlatformCoreException(FAILED_TO_VALIDATE_OTP);
+            handleExceptionAndCreateResponse(e, FAILED_TO_VALIDATE_OTP, FAILED_TO_VALIDATE_OTP_MESSAGE);
         }
+        return null;
     }
 
     @Override
-    public boolean doLogout() {
+    public void doLogout() {
         String emailId = getCurrentUserEmailId();
         log.info("emailId in logout api : {}", emailId);
-        return nonNull(otpService.inValidateToken(emailId));
+        CustomerAccount customerAccount = customerAccountService.getCustomerAccountByEmail(emailId);
+        customerAccount.setToken(null);
+        customerAccountService.saveCustomerAccountAsync(customerAccount);
+    }
+
+    @Override
+    public CustomerAccount getLoginData() {
+        String customerId = getCurrentCustomerId();
+        log.info("customerId in login data api : {}", customerId);
+        return customerAccountService.getCustomerAccountByCustomerId(customerId);
     }
 
 }

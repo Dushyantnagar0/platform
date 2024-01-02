@@ -3,9 +3,9 @@ package com.org.platform.errors.exceptions;
 
 import com.org.platform.errors.errorCodes.PlatformError;
 
-import static com.org.platform.utils.Constants.SOMETHING_WRONG_HAPPENED;
+import static com.org.platform.utils.Constants.SOMETHING_WENT_WRONG;
 
-public class PlatformCoreException extends RuntimeException implements PlatformException{
+public class PlatformCoreException extends RuntimeException implements PlatformException {
 
     private String errorCode;
     private String errorMessage;
@@ -20,7 +20,7 @@ public class PlatformCoreException extends RuntimeException implements PlatformE
 
     public PlatformCoreException(String errorMessage) {
         super(errorMessage);
-        this.errorCode = SOMETHING_WRONG_HAPPENED;
+        this.errorCode = SOMETHING_WENT_WRONG;
         this.errorMessage = errorMessage;
     }
 
@@ -43,7 +43,7 @@ public class PlatformCoreException extends RuntimeException implements PlatformE
     }
 
     public PlatformCoreException(String... params) {
-        this.errorCode = SOMETHING_WRONG_HAPPENED;
+        this.errorCode = SOMETHING_WENT_WRONG;
         this.params = params;
     }
 

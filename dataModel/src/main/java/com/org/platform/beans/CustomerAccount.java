@@ -26,4 +26,5 @@ public class CustomerAccount {
     private String address2;
     private String city;
     private String zipCode;
+    private String token;
 }

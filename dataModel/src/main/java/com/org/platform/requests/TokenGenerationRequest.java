@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TokenGenerationRequest {
     private String emailId;
-    private String refId;
+    private String customerId;
     private String hashedOtp;
     private boolean valid;
 }

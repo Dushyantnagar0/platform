@@ -1,8 +1,11 @@
 package com.org.platform.helpers;
 
 import com.org.platform.beans.CustomerAccount;
+import com.org.platform.mappers.PlatformEnhancedMapper;
 import com.org.platform.requests.CustomerAccountRequest;
 import com.org.platform.requests.LogInRequest;
+import com.org.platform.requests.ProfileUpdateRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +16,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class CustomerAccountHelper {
+
+    private final PlatformEnhancedMapper platformEnhancedMapper;
 
     public CustomerAccount createNewOrUpdateCustomerAccount(CustomerAccount customerAccount, CustomerAccountRequest customerAccountRequest) {
         if(isNull(customerAccount)) {
@@ -21,13 +27,7 @@ public class CustomerAccountHelper {
         }
         if(isBlank(customerAccount.getCustomerId())) customerAccount.setCustomerId(UUID.randomUUID().toString());
         if(isBlank(customerAccount.getEmailId())) customerAccount.setEmailId(customerAccountRequest.getEmailId());
-        customerAccount.setPhoneNumber(customerAccount.getPhoneNumber());
-        customerAccount.setFirstName(customerAccountRequest.getFirstName());
-        customerAccount.setLastName(customerAccountRequest.getLastName());
-        customerAccount.setAddress1(customerAccountRequest.getAddress1());
-        customerAccount.setAddress2(customerAccountRequest.getAddress2());
-        customerAccount.setCity(customerAccountRequest.getCity());
-        customerAccount.setZipCode(customerAccountRequest.getZipCode());
+        platformEnhancedMapper.populateCustomerAccountFromCustomerAccountRequest(customerAccountRequest, customerAccount);
         return customerAccount;
     }
 
@@ -37,5 +37,10 @@ public class CustomerAccountHelper {
         customerAccountRequest.setEmailId(logInRequest.getEmailId());
         customerAccountRequest.setPhoneNumber(logInRequest.getPhoneNumber());
         return customerAccountRequest;
+    }
+
+    public void populateCustomerAccountToLatest(ProfileUpdateRequest profileUpdateRequest, CustomerAccount customerAccount) {
+        if(isNull(customerAccount) || isNull(profileUpdateRequest)) return;
+        platformEnhancedMapper.populateCustomerAccountFromProfileUpdate(profileUpdateRequest, customerAccount);
     }
 }

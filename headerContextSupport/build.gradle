@@ -43,10 +43,11 @@ repositories {
 }
 
 dependencies {
+    implementation project(":dataModel")
     implementation 'org.jetbrains:annotations:20.1.0'
     implementation 'org.jetbrains:annotations:20.1.0'
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
     implementation 'org.apache.commons:commons-lang3:3.9'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 }

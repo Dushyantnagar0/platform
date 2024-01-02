@@ -10,7 +10,10 @@ public enum PlatformErrorCodes implements PlatformError {
     FAILED_TO_VALIDATE_OTP("PE106", "otp.validation.failed"),
     INVALID_TOKEN("PE107", "invalid.token"),
     NO_CUSTOMER_FOUND("PE108", "no.customer.found"),
-    TEST_EXCEPTION("PE109", "test.exception");
+    TEST_EXCEPTION("PE109", "test.exception"),
+    IP_RATE_LIMIT_EXCEEDED("PE110", "ip.rate.limit.exceeded"),
+    RATE_LIMIT_EXCEEDED("PE111", "rate.limit.exceeded"),
+    INVALID_HEADERS("PE112", "invalid.headers");
 
     private final String errorCode;
     private final String errorMessage;

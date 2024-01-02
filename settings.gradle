@@ -7,4 +7,6 @@ include 'mongoSupport'
 include 'elasticSupport'
 include 'headerContextSupport'
 include 'mongoSupport'
+include 'redisSupport'
+include 'kafkaSupport'
 

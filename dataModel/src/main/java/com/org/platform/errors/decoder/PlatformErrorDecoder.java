@@ -19,10 +19,11 @@ import static java.util.Objects.nonNull;
 @Slf4j
 public class PlatformErrorDecoder implements ErrorDecoder {
 
+//    Not being used, use in feign client
     @Override
     public Exception decode(String methodKey, Response response) {
         FeignException exception = FeignException.errorStatus(methodKey, response);
-        log.info("exception: ",exception);
+        log.info("exception in decoder : ", exception);
         final ErrorResponse.ErrorDetails errorDetails;
         try {
             errorDetails = new ObjectMapper().readValue(exception.content(), ErrorResponse.class).getErrorDetails();
